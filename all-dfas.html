@@ -1,0 +1,2346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+
+    <title>All DFAs - Management Dashboard</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(145deg, #083B37 0%, #147A72 55%, #1A9B8E 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-left h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .header-left p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-home {
+            background: #147A72;
+            color: white;
+        }
+
+        .btn-home:hover {
+            background: #0F6660;
+            transform: translateY(-2px);
+        }
+
+        .btn-new {
+            background: #1B7A4E;
+            color: white;
+        }
+
+        .btn-new:hover {
+            background: #166B44;
+            transform: translateY(-2px);
+        }
+
+        .btn-export {
+            background: #147A72;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: #0B4F4A;
+        }
+
+        .btn-clear {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #c0392b;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .stat-icon.total {
+            background: linear-gradient(145deg, #083B37 0%, #147A72 55%, #1A9B8E 100%);
+        }
+
+        .stat-icon.revup {
+            background: linear-gradient(145deg, #1B7A4E 0%, #2D9B6A 100%);
+        }
+
+        .stat-icon.applicable {
+            background: linear-gradient(135deg, #147A72 0%, #0F6660 100%);
+        }
+
+        .stat-icon.completed {
+            background: linear-gradient(145deg, #B45309 0%, #D97706 100%);
+        }
+
+        .stat-icon.avg-score {
+            background: linear-gradient(145deg, #C45C26 0%, #E07A3D 100%);
+        }
+
+        .stat-info h3 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        /* Advanced Filters Section */
+        .filters-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .filters-header h2 {
+            font-size: 1.5rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-toggle-btn {
+            padding: 8px 16px;
+            background: #147A72;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-toggle-btn:hover {
+            background: #0F6660;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-input,
+        .filter-select {
+            padding: 10px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .filter-input:focus,
+        .filter-select:focus {
+            outline: none;
+            border-color: #147A72;
+            box-shadow: 0 0 0 3px rgba(20, 122, 114, 0.1);
+        }
+
+        .filter-input::placeholder {
+            color: #999;
+        }
+
+        .quick-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .quick-filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .quick-filter-btn:hover {
+            border-color: #147A72;
+            color: #147A72;
+        }
+
+        .quick-filter-btn.active {
+            background: #147A72;
+            color: white;
+            border-color: #147A72;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-apply-filter {
+            background: #1B7A4E;
+            color: white;
+        }
+
+        .btn-apply-filter:hover {
+            background: #166B44;
+        }
+
+        .btn-reset-filter {
+            background: #f1f1f1;
+            color: #333;
+        }
+
+        .btn-reset-filter:hover {
+            background: #e0e0e0;
+        }
+
+        .active-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .active-filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: linear-gradient(145deg, #083B37 0%, #147A72 55%, #1A9B8E 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .active-filter-tag .remove-filter {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .active-filter-tag .remove-filter:hover {
+            transform: scale(1.2);
+        }
+
+        .date-range-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .controls-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #147A72;
+            box-shadow: 0 0 0 3px rgba(20, 122, 114, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: #999;
+        }
+
+        .sort-select {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            background: white;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: linear-gradient(145deg, #083B37 0%, #147A72 55%, #1A9B8E 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .table-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .table-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .table-scroll-hint {
+            width: 100%;
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        /* Horizontal slide/scroll so Actions (Edit/View/…) stay reachable */
+        .table-scroll {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: visible;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+            scrollbar-gutter: stable;
+        }
+
+        .table-scroll::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .table-scroll::-webkit-scrollbar-track {
+            background: #EEF2F4;
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb {
+            background: #147A72;
+            border-radius: 8px;
+        }
+
+        table {
+            width: max-content;
+            min-width: 1100px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th, td {
+            white-space: nowrap;
+        }
+
+        td.step-scores-cell {
+            white-space: normal;
+            min-width: 140px;
+        }
+
+        th.actions-col,
+        td.actions-col {
+            position: sticky;
+            right: 0;
+            z-index: 3;
+            background: #fff;
+            box-shadow: -6px 0 12px rgba(21, 32, 43, 0.08);
+            min-width: 300px;
+        }
+
+        thead th.actions-col {
+            background: #f8f9fa;
+            z-index: 4;
+        }
+
+        th.dfa-id-col,
+        td.dfa-id-col {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #fff;
+            box-shadow: 4px 0 10px rgba(21, 32, 43, 0.06);
+        }
+
+        thead th.dfa-id-col {
+            background: #f8f9fa;
+            z-index: 4;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        th:hover {
+            background: #e9ecef;
+        }
+
+        th.sortable::after {
+            content: '⇅';
+            position: absolute;
+            right: 10px;
+            opacity: 0.3;
+        }
+
+        th.sorted-asc::after {
+            content: '↑';
+            opacity: 1;
+        }
+
+        th.sorted-desc::after {
+            content: '↓';
+            opacity: 1;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .dfa-id-cell {
+            font-weight: 600;
+            color: #147A72;
+            font-family: 'DM Sans', ui-monospace, monospace;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .type-badge.revup {
+            background: #E6F5ED;
+            color: #1B7A4E;
+        }
+
+        .type-badge.applicable {
+            background: #E6F5F3;
+            color: #147A72;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-badge.in-progress {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .status-badge.completed {
+            background: #E6F5ED;
+            color: #1B7A4E;
+        }
+
+        .status-badge.draft {
+            background: #f3e5f5;
+            color: #0B4F4A;
+        }
+
+        .dfa-score-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border: 2px solid;
+        }
+
+        .dfa-score-badge.excellent {
+            background: #d4edda;
+            color: #155724;
+            border-color: #28a745;
+        }
+
+        .dfa-score-badge.good {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-color: #17a2b8;
+        }
+
+        .dfa-score-badge.average {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffc107;
+        }
+
+        .dfa-score-badge.poor {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #dc3545;
+        }
+
+        .dfa-score-badge.not-calculated {
+            background: #e2e3e5;
+            color: #383d41;
+            border-color: #6c757d;
+        }
+
+        .score-icon {
+            font-size: 1.1rem;
+        }
+
+        .step-scores-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .step-score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .step-score-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .step-score-value {
+            color: #147A72;
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+
+        .action-buttons .action-btn {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view {
+            background: #147A72;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #0F6660;
+        }
+
+        .btn-edit {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #f57c00;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .btn-download {
+            background: #147A72;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #0B4F4A;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h2 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background: #f1f1f1;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #147A72;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1B7A4E;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 3000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.error {
+            background: #e74c3c;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-right {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .controls-row {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .date-range-group {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+
+            /* Keep action buttons in a row inside the sticky Actions column */
+            .action-buttons {
+                flex-direction: row;
+                flex-wrap: nowrap;
+            }
+
+            .action-btn {
+                width: auto;
+            }
+
+            .table-scroll {
+                max-width: 100vw;
+            }
+        }
+    
+
+        /* Shared form / wizard polish */
+        .container, .header-card, .progress-card, .form-card, .content-card,
+        .filters-section, .controls-section, .table-container, .header {
+            box-shadow: 0 8px 24px rgba(21,32,43,0.07) !important;
+            border: 1px solid #D3DBE3;
+        }
+        .header, .header-card { animation: dfa-nav-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .form-container, .form-card, .content-card, .progress-card,
+        .filters-section, .controls-section, .table-container, .stats-container {
+            animation: dfa-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+        }
+        .header h1, .header-text h1, .header-left h1 {
+            font-family: 'Space Grotesk', sans-serif !important; letter-spacing: -0.02em;
+        }
+        .btn, .btn-primary, .btn-header, .add-platform-btn, .load-selected-btn,
+        .filter-toggle-btn, .nav-btn, .action-btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+        }
+        .btn:hover:not(:disabled), .btn-primary:hover, .nav-btn:hover { transform: translateY(-1px); }
+        input:focus, select:focus, textarea:focus, .filter-input:focus, .filter-select:focus,
+        .search-input:focus, .search-box input:focus {
+            border-color: #147A72 !important; box-shadow: 0 0 0 3px rgba(20,122,114,0.12) !important;
+        }
+        .spinner { border-top-color: #147A72 !important; }
+        .progress-step.active .progress-circle,
+        .progress-step.active .step-circle,
+        .step-circle.active {
+            background: #147A72 !important; border-color: #147A72 !important; color: white !important;
+        }
+        .progress-step.active .progress-label,
+        .progress-step.active .step-label { color: #0B4F4A !important; }
+
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>DFA Management</h1>
+                <p>DFA WebApp — view and manage all Design Failure Analysis reports</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-home" onclick="goHome()">
+                    🏠 Home
+                </button>
+                <button class="btn btn-new" onclick="createNew()">
+                    ➕ New DFA
+                </button>
+                <button class="btn btn-export" onclick="exportAllData()">
+                    📥 Export All
+                </button>
+                <button class="btn btn-clear" onclick="confirmClearAll()">
+                    🗑️ Clear All
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-container" id="statsContainer">
+            <div class="stat-card">
+                <div class="stat-icon total">📋</div>
+                <div class="stat-info">
+                    <h3 id="totalCount">0</h3>
+                    <p>Total DFAs</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon revup">🚀</div>
+                <div class="stat-info">
+                    <h3 id="revupCount">0</h3>
+                    <p>REVUP</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon applicable">📝</div>
+                <div class="stat-info">
+                    <h3 id="applicableCount">0</h3>
+                    <p>NEW DFA</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon completed">✅</div>
+                <div class="stat-info">
+                    <h3 id="completedCount">0</h3>
+                    <p>Completed</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon avg-score">⭐</div>
+                <div class="stat-info">
+                    <h3 id="avgScoreDisplay">0%</h3>
+                    <p>Avg DFA Score</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Filters Section -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <h2>
+                    <span>🔍</span>
+                    <span>Advanced Filters</span>
+                </h2>
+                <button class="filter-toggle-btn" onclick="toggleFilters()">
+                    <span id="filterToggleText">Show Filters</span>
+                </button>
+            </div>
+
+            <div id="filtersContent" style="display: none;">
+                <!-- Quick Filters -->
+                <div class="quick-filters">
+                    <button class="quick-filter-btn active" data-filter="all" onclick="applyQuickFilter('all')">
+                        All DFAs
+                    </button>
+                    <button class="quick-filter-btn" data-filter="revup" onclick="applyQuickFilter('revup')">
+                        🚀 REVUP Only
+                    </button>
+                    <button class="quick-filter-btn" data-filter="newdfa" onclick="applyQuickFilter('newdfa')">
+                        ✨ NEW DFA Only
+                    </button>
+                    <button class="quick-filter-btn" data-filter="completed" onclick="applyQuickFilter('completed')">
+                        ✅ Completed
+                    </button>
+                    <button class="quick-filter-btn" data-filter="in-progress" onclick="applyQuickFilter('in-progress')">
+                        ⏳ In Progress
+                    </button>
+                    <button class="quick-filter-btn" data-filter="high-score" onclick="applyQuickFilter('high-score')">
+                        ⭐ High Score (≥90%)
+                    </button>
+                </div>
+
+                <!-- Advanced Filters Grid -->
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>🔖</span>
+                            <span>DFA ID</span>
+                        </label>
+                        <input type="text" class="filter-input" id="filterDfaId" placeholder="e.g., DFA-2024-001">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>📦</span>
+                            <span>Platform</span>
+                        </label>
+                        <select class="filter-select" id="filterPlatform">
+                            <option value="">All Platforms</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>👤</span>
+                            <span>Owner</span>
+                        </label>
+                        <input type="text" class="filter-input" id="filterOwner" placeholder="Enter owner name">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>🏷️</span>
+                            <span>TC Number</span>
+                        </label>
+                        <input type="text" class="filter-input" id="filterTcNumber" placeholder="e.g., TC-12345">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>🎯</span>
+                            <span>Milestone</span>
+                        </label>
+                        <select class="filter-select" id="filterMilestone">
+                            <option value="">All Milestones</option>
+                            <option value="POC">POC</option>
+                            <option value="MK1">MK1</option>
+                            <option value="MK2">MK2</option>
+                            <option value="MK3">MK3</option>
+                            <option value="X1">X1</option>
+                            <option value="LVPT">LVPT</option>
+                            <option value="HVPT">HVPT</option>
+                            <option value="SOP">SOP</option>
+                            <option value="Post SOP">Post SOP</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>📊</span>
+                            <span>Status</span>
+                        </label>
+                        <select class="filter-select" id="filterStatus">
+                            <option value="">All Status</option>
+                            <option value="completed">Completed</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="draft">Draft</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>⭐</span>
+                            <span>Min DFA Score (%)</span>
+                        </label>
+                        <input type="number" class="filter-input" id="filterMinScore" placeholder="0-100" min="0" max="100">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>⭐</span>
+                            <span>Max DFA Score (%)</span>
+                        </label>
+                        <input type="number" class="filter-input" id="filterMaxScore" placeholder="0-100" min="0" max="100">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>📅</span>
+                            <span>Date Range</span>
+                        </label>
+                        <div class="date-range-group">
+                            <input type="date" class="filter-input" id="filterDateFrom" title="From Date">
+                            <input type="date" class="filter-input" id="filterDateTo" title="To Date">
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>📋</span>
+                            <span>Min PFD Steps</span>
+                        </label>
+                        <input type="number" class="filter-input" id="filterMinPfdSteps" placeholder="Min steps" min="0">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>🔧</span>
+                            <span>Min AMR Steps</span>
+                        </label>
+                        <input type="number" class="filter-input" id="filterMinAmrSteps" placeholder="Min steps" min="0">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span>🏭</span>
+                            <span>Facility</span>
+                        </label>
+                        <select class="filter-select" id="filterFacility">
+                            <option value="">All Facilities</option>
+                            <option value="HOSUR">HOSUR</option>
+                            <option value="AURIC">AURIC</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="filter-actions">
+                    <button class="btn btn-reset-filter" onclick="resetFilters()">
+                        <span>🔄</span>
+                        <span>Reset Filters</span>
+                    </button>
+                    <button class="btn btn-apply-filter" onclick="applyFilters()">
+                        <span>✓</span>
+                        <span>Apply Filters</span>
+                    </button>
+                </div>
+
+                <!-- Active Filters Display -->
+                <div class="active-filters" id="activeFilters" style="display: none;">
+                    <!-- Active filter tags will be displayed here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="controls-row">
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="🔍 Quick search by DFA ID, Owner, TC Number, or Category..."
+                        oninput="quickSearch()"
+                    >
+                    <span class="search-icon">🔍</span>
+                </div>
+                <select class="sort-select" id="sortSelect" onchange="sortDFAs()">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="id">DFA ID</option>
+                    <option value="type">Type</option>
+                    <option value="status">Status</option>
+                    <option value="score-high">Score (High to Low)</option>
+                    <option value="score-low">Score (Low to High)</option>
+                    <option value="platform">Platform</option>
+                    <option value="owner">Owner</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h2>All DFA Reports</h2>
+                <span class="table-count" id="tableCount">0 DFAs</span>
+                <div class="table-scroll-hint">← Slide / scroll sideways to reach View, Edit, Report, Delete →</div>
+            </div>
+            <div class="table-scroll" id="tableScroll">
+                <div id="tableContent">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ Confirm Deletion</h2>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this DFA?</p>
+                <p><strong id="deleteModalDfaId"></strong></p>
+                <p style="color: #e74c3c; margin-top: 10px;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-clear" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="clearAllModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ Clear All DFAs</h2>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete ALL DFA reports?</p>
+                <p style="color: #e74c3c; margin-top: 10px; font-weight: 600;">
+                    This will permanently delete all <span id="clearAllCount">0</span> DFAs and cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeClearAllModal()">Cancel</button>
+                <button class="btn btn-clear" onclick="clearAllDFAs()">Delete All</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading...</div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let allDFAs = [];
+        let filteredDFAs = [];
+        let deleteTargetId = null;
+        let activeFilters = {};
+        let currentSortColumn = null;
+        let currentSortDirection = 'asc';
+
+        // AMR Requirements Database
+        const AMR_REQUIREMENTS_DATABASE = {
+            "AMR_CP_1": { id: "AMR_CP_1", requirement: "Fastener pitch_normal joints - Normal joints pitch of fasteners should be coarse", category: "Common Points", priority: 3, weightage: 3 },
+            "AMR_CP_2": { id: "AMR_CP_2", requirement: "Fastener pitch_critical joints - Normal joints pitch of fasteners should be coarse but in exceptional cases can be fine", category: "Common Points", priority: 3, weightage: 3 },
+            "AMR_CP_3": { id: "AMR_CP_3", requirement: "No loose washer - No loose washer on any of the fasteners", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_4": { id: "AMR_CP_4", requirement: "Common fasteners - Common fasteners in same sub assembly/Zones", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_5": { id: "AMR_CP_5", requirement: "Tool Clearance - 50mm radial clearance cylinder for all M8+ fasteners", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_6": { id: "AMR_CP_6", requirement: "Allen fasteners - No allen button head fasteners for less than M5 bolts", category: "Common Points", priority: 3, weightage: 3 },
+            "AMR_CP_7": { id: "AMR_CP_7", requirement: "Sharp Edges - Min 0.5mm radius on sheet metal", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_8": { id: "AMR_CP_8", requirement: "Fasteners grade - Grade of mating fasteners should be checked", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_9": { id: "AMR_CP_9", requirement: "Fastener direction - No assembly of fasteners in +ve Z direction", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_10": { id: "AMR_CP_10", requirement: "Decals variants - Variant mixup", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_11": { id: "AMR_CP_11", requirement: "Layout Requirement - Extra Space to be allocated", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_12": { id: "AMR_CP_12", requirement: "FTG Requirement - Any new or modification requirement in FTG", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_13": { id: "AMR_CP_13", requirement: "FTG Requirement - Mix up between FTG", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CF_1": { id: "AMR_CF_1", requirement: "Grounding Points - Paint-free masking area ø15mm, for earthings", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_2": { id: "AMR_CF_2", requirement: "VIN Stamp - Flat area 100x20mm for marking VIN Scribe depth > 0.2mm", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_3": { id: "AMR_CF_3", requirement: "Bearing Fits - Head tube bearing cup press fit interference 0.015-0.09mm", category: "Chassis & Frame", priority: 3, weightage: 3 },
+            "AMR_CF_4": { id: "AMR_CF_4", requirement: "Frame lifting points - 3 defined Datum targets (A1/A2/A3) for conveyor hangers", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_5": { id: "AMR_CF_5", requirement: "ED Drain - Holes ø6mm min at all local Z-minima (drainage points)", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_6": { id: "AMR_CF_6", requirement: "Sharp edges - Chamfer, buffing operation on all potential exposed area from parts to operator", category: "Chassis & Frame", priority: 3, weightage: 3 },
+            "AMR_CF_7": { id: "AMR_CF_7", requirement: "Routing Clamps - Flexible - Flexible clamp for routing areas", category: "Chassis & Frame", priority: 3, weightage: 3 },
+            "AMR_CF_8": { id: "AMR_CF_8", requirement: "Routing Clamps - Rigid - Rigid routing clamp should be always in open condition & no closing requirement after assembly", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_9": { id: "AMR_CF_9", requirement: "Spring assy - side stand, center stand - Efforts for spring assy should be below - TBD", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_10": { id: "AMR_CF_10", requirement: "Spring symmetric - side stand, center stand - All spring should be symmetric to avoid wrong assy", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_T_1": { id: "AMR_T_1", requirement: "Gear grading - No gear grading, if grading then clear strategy sign off", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_2": { id: "AMR_T_2", requirement: "Traceability - Data matrix on all parts on accessible location, with standard format", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_3": { id: "AMR_T_3", requirement: "NVH - NVH specs conclusion & sign off before MK3", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_4": { id: "AMR_T_4", requirement: "UVW cable Design Poka Yoke - Wrong assembly should not happen, Requirement is design Poka Yoke", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_5": { id: "AMR_T_5", requirement: "Millipore specs - If no inhouse washing, GB level no millipore spec", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_6": { id: "AMR_T_6", requirement: "Oil grade - Oil grade should be 80W90 (common with current product/Line) if two or more product on same line", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_7": { id: "AMR_T_7", requirement: "Locating Datums - For Bearing pressing, casting should have locating datums for pressing", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_8": { id: "AMR_T_8", requirement: "Oil filling - Port geometry supports adapters (SAE J1231 profile)", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_9": { id: "AMR_T_9", requirement: "Bearing pressing - No grease or oil application on bearings/gear case while bearing pressing", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_10": { id: "AMR_T_10", requirement: "Bearing interference - Wrt material interference should be - TBD", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_11": { id: "AMR_T_11", requirement: "Breather - Vertical orientation (Z+ vector)", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_12": { id: "AMR_T_12", requirement: "Belt tension - Range of tension specs should be base actual variation on parts/assembly", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_13": { id: "AMR_T_13", requirement: "Pulley alignment - No pulley alignment required, should control through design", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_14": { id: "AMR_T_14", requirement: "Motor alignment - No motor alignment required, should control through design", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_WH_1": { id: "AMR_WH_1", requirement: "Routing Points - Clip spacing max 200mm for support", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_2": { id: "AMR_WH_2", requirement: "Pass-Thru - IP67 rated coupler for all water exposure areas", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_3": { id: "AMR_WH_3", requirement: "Steering Loop - Min 50mm loop length at steering pivot", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_4": { id: "AMR_WH_4", requirement: "Fuse Access/Pcan - Internal coupler require Access via 1 panel removal, example P-can", category: "Wiring & Harness", priority: 3, weightage: 3 },
+            "AMR_WH_5": { id: "AMR_WH_5", requirement: "Fouling/touch zones - Tape overlap 50% min in high wear zones", category: "Wiring & Harness", priority: 3, weightage: 3 },
+            "AMR_WH_6": { id: "AMR_WH_6", requirement: "Insert/Push Force - Grommet/push clip insertion force < 40N MANUAL limit", category: "Wiring & Harness", priority: 3, weightage: 3 },
+            "AMR_WH_7": { id: "AMR_WH_7", requirement: "Flexible metal clamp - No hard clamp opening & closing, flexible metal clamp for routing", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_8": { id: "AMR_WH_8", requirement: "No of cable ties - No loose cable ties", category: "Wiring & Harness", priority: 3, weightage: 3 },
+            "AMR_WH_9": { id: "AMR_WH_9", requirement: "Marking for loose cable ties - Marking on wiring/cables for loose cable tie routing", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_10": { id: "AMR_WH_10", requirement: "Coupler assembly force - Coupler insertion/assembly force < 40N MANUAL limit", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_11": { id: "AMR_WH_11", requirement: "Grease on coupler - No grease on couplers", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_12": { id: "AMR_WH_12", requirement: "Power cable symmetric ends - All power cable should have symmetric ends with same size studs", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_BST_1": { id: "AMR_BST_1", requirement: "Shock orientation - Design poka yoke to avoid shock wrong orientation assy", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_2": { id: "AMR_BST_2", requirement: "Shock eyelet - Top & bottom eyelet should have enough tolerance so that it can fit/align on frame", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_3": { id: "AMR_BST_3", requirement: "Shock supplier mix up - Rear & front shock should not have limitation of same source part assembly, any combination should be ok", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_4": { id: "AMR_BST_4", requirement: "Bleed Screw - Nipple accessible with open end spanner/ring spanner", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_5": { id: "AMR_BST_5", requirement: "Wheel speed sensor gap - Wheel speed sensor gap should be control through design", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_6": { id: "AMR_BST_6", requirement: "Brake oil level visibility - Master Cylinder level glass visible in assembly or at vehicle level", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_7": { id: "AMR_BST_7", requirement: "CBS setting specs - CBS setting should be at sub assy level with enough accessibility", category: "Brakes, Suspension & Tyres", priority: 3, weightage: 3 },
+            "AMR_BST_8": { id: "AMR_BST_8", requirement: "Brake EOL spec - Load vs distance, wheel freeness with SOP need to defined", category: "Brakes, Suspension & Tyres", priority: 3, weightage: 3 },
+            "AMR_BST_9": { id: "AMR_BST_9", requirement: "Hose routing - Guide clamps & position should be given on hoses", category: "Brakes, Suspension & Tyres", priority: 3, weightage: 3 },
+            "AMR_EP_1": { id: "AMR_EP_1", requirement: "Head lamp - Headlamp adjustment provision at vehicle level should available", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_2": { id: "AMR_EP_2", requirement: "Headlamp aiming - Headlamp aiming spec should be considered & setting has to be done at supplier end", category: "Electrical Peripherals", priority: 3, weightage: 3 },
+            "AMR_EP_3": { id: "AMR_EP_3", requirement: "All Lamps gap & flush - 2 way & 4 way locators should be available on mating parts to control gap", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_4": { id: "AMR_EP_4", requirement: "Headlamp corner rat holes - Clear spec for rat holes (corner gaps) should be defined as it can not be zero", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_5": { id: "AMR_EP_5", requirement: "QR code locations - All peripheral parts QR code location needs to sign off as scanning feasibility", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_6": { id: "AMR_EP_6", requirement: "Dashboard flashing timings - Timings & flashing method to be sign off", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_7": { id: "AMR_EP_7", requirement: "ECU flashing timings - Timings for all ECU flashing should be less that 2 mins", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_8": { id: "AMR_EP_8", requirement: "Dashboard SIM assy - SIM should be common despite domestic or international, allocation can be done after assembly of SIM to dashboard", category: "Electrical Peripherals", priority: 3, weightage: 3 },
+            "AMR_BP_1": { id: "AMR_BP_1", requirement: "Tongue & groove interactions - Maximum areas should be with tongue & groove mechanism for better fit & finish", category: "Bodyworks & Plastics", priority: 3, weightage: 3 },
+            "AMR_BP_2": { id: "AMR_BP_2", requirement: "2 way & 4 way locators - Maximum areas should have 2W & 4W locators", category: "Bodyworks & Plastics", priority: 3, weightage: 3 },
+            "AMR_BP_3": { id: "AMR_BP_3", requirement: "Snap Force - Insertion 10N ± 3N; Retention 25N min", category: "Bodyworks & Plastics", priority: 3, weightage: 3 },
+            "AMR_BP_4": { id: "AMR_BP_4", requirement: "Panel Gaps - Nominal 1.5mm ± 0.5mm (3-sigma)", category: "Bodyworks & Plastics", priority: 3, weightage: 3 },
+            "AMR_BP_5": { id: "AMR_BP_5", requirement: "Sequence - Assemble Rear-to-center & Front to center logic enforced", category: "Bodyworks & Plastics", priority: 5, weightage: 5 },
+            "AMR_BP_6": { id: "AMR_BP_6", requirement: "Drainage hole & draft - parts like glove box, storage box wherever water can stay, should have drain hole & draft", category: "Bodyworks & Plastics", priority: 5, weightage: 5 },
+            "AMR_BP_7": { id: "AMR_BP_7", requirement: "Rubber caps - No glue application on rubber caps", category: "Bodyworks & Plastics", priority: 3, weightage: 3 },
+        };
+
+
+
+
+
+
+
+        function resolveAmrId(amr) {
+            if (amr == null) return null;
+            if (typeof amr === 'string') {
+                const m = amr.match(/(AMR_[A-Z]+_\d+)/);
+                return m ? m[1] : amr.trim();
+            }
+            if (typeof amr === 'object') {
+                if (amr.id) return resolveAmrId(String(amr.id));
+                if (amr.amrId) return resolveAmrId(String(amr.amrId));
+            }
+            return String(amr);
+        }
+
+        function getAMRDetails(amrId) {
+            const id = resolveAmrId(amrId);
+            const info = id ? AMR_REQUIREMENTS_DATABASE[id] : null;
+            if (info && typeof info === 'object') {
+                return {
+                    id: info.id || id,
+                    requirement: info.requirement || id,
+                    category: info.category || '',
+                    priority: Number(info.priority) || 0,
+                    weightage: Number(info.weightage) || 0
+                };
+            }
+            return {
+                id: id || String(amrId || ''),
+                requirement: id || String(amrId || ''),
+                category: '',
+                priority: 0,
+                weightage: 0
+            };
+        }
+
+        function getCatalogApplicableTotals() {
+            let total = 0, p5 = 0, p3 = 0, count = 0;
+            Object.keys(AMR_REQUIREMENTS_DATABASE).forEach(function(key) {
+                const info = AMR_REQUIREMENTS_DATABASE[key];
+                if (!info || typeof info !== 'object') return;
+                const pr = Number(info.priority) || 0;
+                const wt = Number(info.weightage) || 0;
+                if (!pr || !wt) return;
+                const v = pr * wt;
+                total += v;
+                count += 1;
+                if (pr === 5) p5 += v;
+                else if (pr === 3) p3 += v;
+            });
+            return { total: total, p5: p5, p3: p3, count: count };
+        }
+
+        function calculateDFAScore(data) {
+            // Fail = full P×W, Conditionally Passed = 0.5×P×W. Applicable = full catalog.
+            if (!data.amr || !data.amr.steps || data.amr.steps.length === 0) {
+                return null;
+            }
+
+            const catalog = getCatalogApplicableTotals();
+            if (!catalog.total) return null;
+
+            let totalPenalties = 0;
+            let priority5Penalties = 0;
+            let priority3Penalties = 0;
+            let failedItems = [];
+            let failCount = 0;
+            const seen = new Set();
+
+            function penaltyFactor(status) {
+                if (status === 'Fail') return 1;
+                if (status === 'Conditionally Passed' || status === 'Partially Passed') return 0.5;
+                return 0;
+            }
+
+            data.amr.steps.forEach(function(step) {
+                const statuses = step.amrStatuses || {};
+                const ids = step.allSelectedAMRs && step.allSelectedAMRs.length
+                    ? step.allSelectedAMRs
+                    : Object.keys(statuses);
+                ids.forEach(function(raw) {
+                    const amrId = resolveAmrId(raw);
+                    if (!amrId || seen.has(amrId)) return;
+                    const status = statuses[amrId] || statuses[raw];
+                    const factor = status != null ? penaltyFactor(status) : 1;
+                    if (factor <= 0) return;
+                    seen.add(amrId);
+                    const amrInfo = getAMRDetails(amrId);
+                    if (!amrInfo.priority || !amrInfo.weightage) return;
+                    const ruleValue = amrInfo.priority * amrInfo.weightage * factor;
+                    totalPenalties += ruleValue;
+                    failCount += 1;
+                    failedItems.push(amrId);
+                    if (amrInfo.priority === 5) priority5Penalties += ruleValue;
+                    else if (amrInfo.priority === 3) priority3Penalties += ruleValue;
+                });
+            });
+
+            const overallScore = 100 - ((totalPenalties / catalog.total) * 100);
+            const priority5Score = catalog.p5 > 0 ? 100 - ((priority5Penalties / catalog.p5) * 100) : 100;
+            const priority3Score = catalog.p3 > 0 ? 100 - ((priority3Penalties / catalog.p3) * 100) : 100;
+
+            let rating, color;
+            if (overallScore >= 90) { rating = 'Excellent'; color = 'score-excellent'; }
+            else if (overallScore >= 75) { rating = 'Good'; color = 'score-good'; }
+            else if (overallScore >= 60) { rating = 'Average'; color = 'score-average'; }
+            else { rating = 'Needs Improvement'; color = 'score-poor'; }
+
+            return {
+                overall: overallScore,
+                priority5: priority5Score,
+                priority3: priority3Score,
+                totalPenalties: Math.round(totalPenalties * 100) / 100,
+                totalApplicable: catalog.total,
+                priority5Penalties: priority5Penalties,
+                priority5Applicable: catalog.p5,
+                priority3Penalties: priority3Penalties,
+                priority3Applicable: catalog.p3,
+                failedItems: failedItems,
+                applicableCount: catalog.count,
+                failCount: failCount,
+                rating: rating,
+                color: color,
+                formula: '100 - (Penalties / Applicable x 100); Fail=full, Conditionally Passed=half; Applicable = full AMR catalog'
+            };
+        }
+
+        window.addEventListener('load', function() {
+            loadAllDFAs();
+            populatePlatformFilter();
+        });
+
+        function loadAllDFAs() {
+            const allDFAData = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            allDFAs = Object.values(allDFAData);
+            filteredDFAs = [...allDFAs];
+            
+            updateStats();
+            renderTable();
+        }
+
+        function populatePlatformFilter() {
+            const platforms = new Set();
+            allDFAs.forEach(dfa => {
+                if (dfa.revup && dfa.revup.platform) {
+                    platforms.add(dfa.revup.platform);
+                }
+            });
+
+            const select = document.getElementById('filterPlatform');
+            platforms.forEach(platform => {
+                const option = document.createElement('option');
+                option.value = platform;
+                option.textContent = platform;
+                select.appendChild(option);
+            });
+        }
+
+        function toggleFilters() {
+            const content = document.getElementById('filtersContent');
+            const toggleBtn = document.getElementById('filterToggleText');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggleBtn.textContent = 'Hide Filters';
+            } else {
+                content.style.display = 'none';
+                toggleBtn.textContent = 'Show Filters';
+            }
+        }
+
+        function applyQuickFilter(filterType) {
+            // Update button states
+            document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Reset all filters
+            activeFilters = {};
+
+            // Apply quick filter
+            switch(filterType) {
+                case 'all':
+                    filteredDFAs = [...allDFAs];
+                    break;
+                case 'revup':
+                    activeFilters.type = 'revup';
+                    break;
+                case 'newdfa':
+                    activeFilters.type = 'newdfa';
+                    break;
+                case 'completed':
+                    activeFilters.status = 'completed';
+                    break;
+                case 'in-progress':
+                    activeFilters.status = 'in-progress';
+                    break;
+                case 'high-score':
+                    activeFilters.minScore = 90;
+                    break;
+            }
+
+            applyAllFilters();
+            updateActiveFiltersDisplay();
+        }
+
+        function applyFilters() {
+            activeFilters = {};
+
+            // Collect all filter values
+            const dfaId = document.getElementById('filterDfaId').value.trim();
+            const platform = document.getElementById('filterPlatform').value;
+            const owner = document.getElementById('filterOwner').value.trim();
+            const tcNumber = document.getElementById('filterTcNumber').value.trim();
+            const milestone = document.getElementById('filterMilestone').value;
+            const status = document.getElementById('filterStatus').value;
+            const minScore = document.getElementById('filterMinScore').value;
+            const maxScore = document.getElementById('filterMaxScore').value;
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo = document.getElementById('filterDateTo').value;
+            const minPfdSteps = document.getElementById('filterMinPfdSteps').value;
+            const minAmrSteps = document.getElementById('filterMinAmrSteps').value;
+            const facility = document.getElementById('filterFacility').value;
+
+            if (dfaId) activeFilters.dfaId = dfaId;
+            if (platform) activeFilters.platform = platform;
+            if (owner) activeFilters.owner = owner;
+            if (tcNumber) activeFilters.tcNumber = tcNumber;
+            if (milestone) activeFilters.milestone = milestone;
+            if (status) activeFilters.status = status;
+            if (minScore) activeFilters.minScore = parseFloat(minScore);
+            if (maxScore) activeFilters.maxScore = parseFloat(maxScore);
+            if (dateFrom) activeFilters.dateFrom = dateFrom;
+            if (dateTo) activeFilters.dateTo = dateTo;
+            if (minPfdSteps) activeFilters.minPfdSteps = parseInt(minPfdSteps);
+            if (minAmrSteps) activeFilters.minAmrSteps = parseInt(minAmrSteps);
+            if (facility) activeFilters.facility = facility;
+
+            applyAllFilters();
+            updateActiveFiltersDisplay();
+            showToast(`✅ Filters applied! Showing ${filteredDFAs.length} DFA(s)`);
+        }
+
+        function applyAllFilters() {
+            filteredDFAs = allDFAs.filter(dfa => {
+                // DFA ID filter
+                if (activeFilters.dfaId && !dfa.dfaId.toLowerCase().includes(activeFilters.dfaId.toLowerCase())) {
+                    return false;
+                }
+
+                // Type filter
+                if (activeFilters.type && dfa.metadata.applicationType !== activeFilters.type) {
+                    return false;
+                }
+
+                // Platform filter
+                if (activeFilters.platform && dfa.revup?.platform !== activeFilters.platform) {
+                    return false;
+                }
+
+                // Owner filter
+                if (activeFilters.owner && !dfa.revup?.dfaOwner?.toLowerCase().includes(activeFilters.owner.toLowerCase())) {
+                    return false;
+                }
+
+                // TC Number filter
+                if (activeFilters.tcNumber && !dfa.revup?.tcNumber?.toLowerCase().includes(activeFilters.tcNumber.toLowerCase())) {
+                    return false;
+                }
+
+                // Milestone filter
+                if (activeFilters.milestone && dfa.revup?.milestone !== activeFilters.milestone) {
+                    return false;
+                }
+
+                // Status filter
+                if (activeFilters.status && dfa.metadata.status !== activeFilters.status) {
+                    return false;
+                }
+
+                // Score filters
+                const scoreData = calculateDFAScore(dfa);
+                if (scoreData) {
+                    if (activeFilters.minScore !== undefined && scoreData.overall < activeFilters.minScore) {
+                        return false;
+                    }
+                    if (activeFilters.maxScore !== undefined && scoreData.overall > activeFilters.maxScore) {
+                        return false;
+                    }
+                }
+
+                // Date range filter
+                if (activeFilters.dateFrom) {
+                    const dfaDate = new Date(dfa.metadata.createdAt).toISOString().split('T')[0];
+                    if (dfaDate < activeFilters.dateFrom) {
+                        return false;
+                    }
+                }
+                if (activeFilters.dateTo) {
+                    const dfaDate = new Date(dfa.metadata.createdAt).toISOString().split('T')[0];
+                    if (dfaDate > activeFilters.dateTo) {
+                        return false;
+                    }
+                }
+
+                // PFD Steps filter
+                if (activeFilters.minPfdSteps !== undefined) {
+                    const pfdSteps = dfa.pfd?.totalSteps || 0;
+                    if (pfdSteps < activeFilters.minPfdSteps) {
+                        return false;
+                    }
+                }
+
+                // AMR Steps filter
+                if (activeFilters.minAmrSteps !== undefined) {
+                    const amrSteps = dfa.amr?.totalSteps || 0;
+                    if (amrSteps < activeFilters.minAmrSteps) {
+                        return false;
+                    }
+                }
+
+                // Facility filter
+                if (activeFilters.facility) {
+                    const hasFacility = dfa.facilityAnalysis?.some(item => item.facility === activeFilters.facility);
+                    if (!hasFacility) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderTable();
+        }
+
+        function updateActiveFiltersDisplay() {
+            const container = document.getElementById('activeFilters');
+            
+            if (Object.keys(activeFilters).length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'flex';
+            container.innerHTML = '';
+
+            Object.keys(activeFilters).forEach(key => {
+                const tag = document.createElement('div');
+                tag.className = 'active-filter-tag';
+                
+                let displayText = '';
+                switch(key) {
+                    case 'dfaId':
+                        displayText = `DFA ID: ${activeFilters[key]}`;
+                        break;
+                    case 'type':
+                        displayText = `Type: ${activeFilters[key].toUpperCase()}`;
+                        break;
+                    case 'platform':
+                        displayText = `Platform: ${activeFilters[key]}`;
+                        break;
+                    case 'owner':
+                        displayText = `Owner: ${activeFilters[key]}`;
+                        break;
+                    case 'tcNumber':
+                        displayText = `TC: ${activeFilters[key]}`;
+                        break;
+                    case 'milestone':
+                        displayText = `Milestone: ${activeFilters[key]}`;
+                        break;
+                    case 'status':
+                        displayText = `Status: ${activeFilters[key]}`;
+                        break;
+                    case 'minScore':
+                        displayText = `Min Score: ${activeFilters[key]}%`;
+                        break;
+                    case 'maxScore':
+                        displayText = `Max Score: ${activeFilters[key]}%`;
+                        break;
+                    case 'dateFrom':
+                        displayText = `From: ${activeFilters[key]}`;
+                        break;
+                    case 'dateTo':
+                        displayText = `To: ${activeFilters[key]}`;
+                        break;
+                    case 'minPfdSteps':
+                        displayText = `Min PFD Steps: ${activeFilters[key]}`;
+                        break;
+                    case 'minAmrSteps':
+                        displayText = `Min AMR Steps: ${activeFilters[key]}`;
+                        break;
+                    case 'facility':
+                        displayText = `Facility: ${activeFilters[key]}`;
+                        break;
+                }
+
+                tag.innerHTML = `
+                    <span>${displayText}</span>
+                    <span class="remove-filter" onclick="removeFilter('${key}')">×</span>
+                `;
+
+                container.appendChild(tag);
+            });
+        }
+
+        function removeFilter(key) {
+            delete activeFilters[key];
+            
+            // Clear the corresponding input
+            switch(key) {
+                case 'dfaId':
+                    document.getElementById('filterDfaId').value = '';
+                    break;
+                case 'platform':
+                    document.getElementById('filterPlatform').value = '';
+                    break;
+                case 'owner':
+                    document.getElementById('filterOwner').value = '';
+                    break;
+                case 'tcNumber':
+                    document.getElementById('filterTcNumber').value = '';
+                    break;
+                case 'milestone':
+                    document.getElementById('filterMilestone').value = '';
+                    break;
+                case 'status':
+                    document.getElementById('filterStatus').value = '';
+                    break;
+                case 'minScore':
+                    document.getElementById('filterMinScore').value = '';
+                    break;
+                case 'maxScore':
+                    document.getElementById('filterMaxScore').value = '';
+                    break;
+                case 'dateFrom':
+                    document.getElementById('filterDateFrom').value = '';
+                    break;
+                case 'dateTo':
+                    document.getElementById('filterDateTo').value = '';
+                    break;
+                case 'minPfdSteps':
+                    document.getElementById('filterMinPfdSteps').value = '';
+                    break;
+                case 'minAmrSteps':
+                    document.getElementById('filterMinAmrSteps').value = '';
+                    break;
+                case 'facility':
+                    document.getElementById('filterFacility').value = '';
+                    break;
+            }
+
+            applyAllFilters();
+            updateActiveFiltersDisplay();
+        }
+
+        function resetFilters() {
+            activeFilters = {};
+            
+            // Clear all filter inputs
+            document.getElementById('filterDfaId').value = '';
+            document.getElementById('filterPlatform').value = '';
+            document.getElementById('filterOwner').value = '';
+            document.getElementById('filterTcNumber').value = '';
+            document.getElementById('filterMilestone').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterMinScore').value = '';
+            document.getElementById('filterMaxScore').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            document.getElementById('filterMinPfdSteps').value = '';
+            document.getElementById('filterMinAmrSteps').value = '';
+            document.getElementById('filterFacility').value = '';
+
+            // Reset quick filters
+            document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === 'all') {
+                    btn.classList.add('active');
+                }
+            });
+
+            filteredDFAs = [...allDFAs];
+            renderTable();
+            updateActiveFiltersDisplay();
+            showToast('🔄 Filters reset successfully!');
+        }
+
+        function quickSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                filteredDFAs = [...allDFAs];
+            } else {
+                filteredDFAs = allDFAs.filter(dfa => {
+                    const searchableText = `
+                        ${dfa.dfaId}
+                        ${dfa.revup?.dfaOwner || ''}
+                        ${dfa.revup?.tcNumber || ''}
+                        ${dfa.revup?.platform || ''}
+                        ${dfa.revup?.tcDescription || ''}
+                    `.toLowerCase();
+
+                    return searchableText.includes(searchTerm);
+                });
+            }
+
+            renderTable();
+        }
+
+
+
+
+
+
+
+
+
+
+        function getStepScores(dfa) {
+            if (!dfa.amr || !dfa.amr.steps || dfa.amr.steps.length === 0) {
+                return [];
+            }
+
+            return dfa.amr.steps.map(step => {
+                return {
+                    number: step.number,
+                    amrCount: step.allSelectedAMRs ? step.allSelectedAMRs.length : 0
+                };
+            });
+        }
+
+        function getDFAScoreBadge(score) {
+            if (score === null) {
+                return `<span class="dfa-score-badge not-calculated">
+                    <span class="score-icon">⊘</span> Not Calculated
+                </span>`;
+            }
+
+            let className = '';
+            let icon = '';
+            
+            if (score >= 90) {
+                className = 'excellent';
+                icon = '🌟';
+            } else if (score >= 75) {
+                className = 'good';
+                icon = '✅';
+            } else if (score >= 60) {
+                className = 'average';
+                icon = '⚠️';
+            } else {
+                className = 'poor';
+                icon = '❌';
+            }
+
+            return `<span class="dfa-score-badge ${className}">
+                <span class="score-icon">${icon}</span> ${score.toFixed(2)}%
+            </span>`;
+        }
+
+        function updateStats() {
+            const total = allDFAs.length;
+            const revup = allDFAs.filter(dfa => dfa.metadata.applicationType === 'revup').length;
+            const applicable = allDFAs.filter(dfa => dfa.metadata.applicationType === 'newdfa').length;
+            const completed = allDFAs.filter(dfa => dfa.metadata.status === 'completed').length;
+
+            const dfasWithScores = allDFAs.filter(dfa => {
+                const scoreData = calculateDFAScore(dfa);
+                return scoreData !== null;
+            });
+
+            let avgScore = 0;
+            if (dfasWithScores.length > 0) {
+                avgScore = dfasWithScores.reduce((sum, dfa) => {
+                    const scoreData = calculateDFAScore(dfa);
+                    return sum + scoreData.overall;
+                }, 0) / dfasWithScores.length;
+            }
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('revupCount').textContent = revup;
+            document.getElementById('applicableCount').textContent = applicable;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('avgScoreDisplay').textContent = dfasWithScores.length > 0 ? avgScore.toFixed(2) + '%' : 'N/A';
+        }
+
+        function renderTable() {
+            const tableContent = document.getElementById('tableContent');
+            const tableCount = document.getElementById('tableCount');
+
+            if (filteredDFAs.length === 0) {
+                tableContent.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h2>No DFAs Found</h2>
+                        <p>No DFAs match your current filters</p>
+                        <button class="btn btn-new" onclick="resetFilters()">Reset Filters</button>
+                    </div>
+                `;
+                tableCount.textContent = '0 DFAs';
+                return;
+            }
+
+            tableCount.textContent = `${filteredDFAs.length} DFA${filteredDFAs.length !== 1 ? 's' : ''}`;
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sortable dfa-id-col" onclick="sortByColumn('dfaId')">DFA ID</th>
+                            <th class="sortable" onclick="sortByColumn('type')">Type</th>
+                            <th class="sortable" onclick="sortByColumn('owner')">Owner</th>
+                            <th class="sortable" onclick="sortByColumn('tcNumber')">TC Number</th>
+                            <th class="sortable" onclick="sortByColumn('platform')">Platform</th>
+                            <th class="sortable" onclick="sortByColumn('pfdSteps')">PFD Steps</th>
+                            <th class="sortable" onclick="sortByColumn('amrSteps')">AMR Steps</th>
+                            <th class="sortable" onclick="sortByColumn('score')">Overall DFA Score</th>
+                            <th>Individual Step Scores</th>
+                            <th class="sortable" onclick="sortByColumn('created')">Created</th>
+                            <th class="sortable" onclick="sortByColumn('status')">Status</th>
+                            <th class="actions-col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filteredDFAs.forEach(dfa => {
+                const createdDate = new Date(dfa.metadata.createdAt).toLocaleDateString();
+                const type = dfa.metadata.applicationType || 'N/A';
+                const owner = dfa.revup?.dfaOwner || 'Not specified';
+                const tcNumber = dfa.revup?.tcNumber || 'Not specified';
+                const platform = dfa.revup?.platform || 'Not specified';
+                const pfdSteps = dfa.pfd?.totalSteps || 0;
+                const amrSteps = dfa.amr?.totalSteps || 0;
+                const status = dfa.metadata.status || 'in-progress';
+                
+                const scoreData = calculateDFAScore(dfa);
+                const scoreBadge = getDFAScoreBadge(scoreData ? scoreData.overall : null);
+                const stepScores = getStepScores(dfa);
+
+                let stepScoresHTML = '';
+                if (stepScores.length > 0) {
+                    stepScoresHTML = '<div class="step-scores-container">';
+                    stepScores.forEach(step => {
+                        stepScoresHTML += `
+                            <div class="step-score-item">
+                                <span class="step-score-label">Step ${step.number}:</span>
+                                <span class="step-score-value">${step.amrCount} AMRs</span>
+                            </div>
+                        `;
+                    });
+                    stepScoresHTML += '</div>';
+                } else {
+                    stepScoresHTML = '<span style="color: #999;">No steps</span>';
+                }
+
+                html += `
+                    <tr>
+                        <td class="dfa-id-cell dfa-id-col">${dfa.dfaId}</td>
+                        <td><span class="type-badge ${type}">${type.toUpperCase()}</span></td>
+                        <td>${owner}</td>
+                        <td>${tcNumber}</td>
+                        <td>${platform}</td>
+                        <td style="text-align: center; font-weight: 600;">${pfdSteps}</td>
+                        <td style="text-align: center; font-weight: 600;">${amrSteps}</td>
+                        <td>${scoreBadge}</td>
+                        <td class="step-scores-cell">${stepScoresHTML}</td>
+                        <td>${createdDate}</td>
+                        <td><span class="status-badge ${status}">${status.replace('-', ' ').toUpperCase()}</span></td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="action-btn btn-view" onclick="viewDFA('${dfa.dfaId}')">
+                                    👁️ View
+                                </button>
+                                <button class="action-btn btn-edit" onclick="editDFA('${dfa.dfaId}')">
+                                    ✏️ Edit
+                                </button>
+                                <button class="action-btn btn-download" onclick="downloadDFA('${dfa.dfaId}')">
+                                    📥 Report
+                                </button>
+                                <button class="action-btn btn-delete" onclick="showDeleteModal('${dfa.dfaId}')">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            tableContent.innerHTML = html;
+        }
+
+        function sortByColumn(column) {
+            if (currentSortColumn === column) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                currentSortDirection = 'asc';
+            }
+
+            // Update column headers
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+            });
+
+            const clickedHeader = event.target;
+            clickedHeader.classList.add(currentSortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
+
+            // Sort the data
+            filteredDFAs.sort((a, b) => {
+                let valA, valB;
+
+                switch(column) {
+                    case 'dfaId':
+                        valA = a.dfaId;
+                        valB = b.dfaId;
+                        break;
+                    case 'type':
+                        valA = a.metadata.applicationType || '';
+                        valB = b.metadata.applicationType || '';
+                        break;
+                    case 'owner':
+                        valA = a.revup?.dfaOwner || '';
+                        valB = b.revup?.dfaOwner || '';
+                        break;
+                    case 'tcNumber':
+                        valA = a.revup?.tcNumber || '';
+                        valB = b.revup?.tcNumber || '';
+                        break;
+                    case 'platform':
+                        valA = a.revup?.platform || '';
+                        valB = b.revup?.platform || '';
+                        break;
+                    case 'pfdSteps':
+                        valA = a.pfd?.totalSteps || 0;
+                        valB = b.pfd?.totalSteps || 0;
+                        break;
+                    case 'amrSteps':
+                        valA = a.amr?.totalSteps || 0;
+                        valB = b.amr?.totalSteps || 0;
+                        break;
+                    case 'score':
+                        const scoreA = calculateDFAScore(a);
+                        const scoreB = calculateDFAScore(b);
+                        valA = scoreA ? scoreA.overall : -1;
+                        valB = scoreB ? scoreB.overall : -1;
+                        break;
+                    case 'created':
+                        valA = new Date(a.metadata.createdAt);
+                        valB = new Date(b.metadata.createdAt);
+                        break;
+                    case 'status':
+                        valA = a.metadata.status || '';
+                        valB = b.metadata.status || '';
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderTable();
+        }
+
+        function sortDFAs() {
+            const sortBy = document.getElementById('sortSelect').value;
+
+            switch(sortBy) {
+                case 'newest':
+                    filteredDFAs.sort((a, b) => new Date(b.metadata.createdAt) - new Date(a.metadata.createdAt));
+                    break;
+                case 'oldest':
+                    filteredDFAs.sort((a, b) => new Date(a.metadata.createdAt) - new Date(b.metadata.createdAt));
+                    break;
+                case 'id':
+                    filteredDFAs.sort((a, b) => a.dfaId.localeCompare(b.dfaId));
+                    break;
+                case 'type':
+                    filteredDFAs.sort((a, b) => a.metadata.applicationType.localeCompare(b.metadata.applicationType));
+                    break;
+                case 'status':
+                    filteredDFAs.sort((a, b) => (a.metadata.status || 'in-progress').localeCompare(b.metadata.status || 'in-progress'));
+                    break;
+                case 'score-high':
+                    filteredDFAs.sort((a, b) => {
+                        const scoreA = calculateDFAScore(a);
+                        const scoreB = calculateDFAScore(b);
+                        if (scoreA === null && scoreB === null) return 0;
+                        if (scoreA === null) return 1;
+                        if (scoreB === null) return -1;
+                        return scoreB.overall - scoreA.overall;
+                    });
+                    break;
+                case 'score-low':
+                    filteredDFAs.sort((a, b) => {
+                        const scoreA = calculateDFAScore(a);
+                        const scoreB = calculateDFAScore(b);
+                        if (scoreA === null && scoreB === null) return 0;
+                        if (scoreA === null) return 1;
+                        if (scoreB === null) return -1;
+                        return scoreA.overall - scoreB.overall;
+                    });
+                    break;
+                case 'platform':
+                    filteredDFAs.sort((a, b) => (a.revup?.platform || '').localeCompare(b.revup?.platform || ''));
+                    break;
+                case 'owner':
+                    filteredDFAs.sort((a, b) => (a.revup?.dfaOwner || '').localeCompare(b.revup?.dfaOwner || ''));
+                    break;
+            }
+
+            renderTable();
+        }
+
+        function viewDFA(dfaId) {
+            const allDFAData = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            const dfa = allDFAData[dfaId];
+            
+            if (dfa) {
+                localStorage.setItem('currentDFA', JSON.stringify(dfa));
+                window.location.href = 'report.html';
+            }
+        }
+
+        function editDFA(dfaId) {
+            const allDFAData = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            const dfa = allDFAData[dfaId];
+            
+            if (dfa) {
+                localStorage.setItem('currentDFA', JSON.stringify(dfa));
+                
+                if (dfa.metadata.applicationType === 'revup') {
+                    window.location.href = 'revup.html';
+                } else {
+                    window.location.href = 'newdfa.html';
+                }
+            }
+        }
+
+        function downloadDFA(dfaId) {
+            const allDFAData = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            const dfa = allDFAData[dfaId];
+            
+            if (dfa) {
+                localStorage.setItem('currentDFA', JSON.stringify(dfa));
+                showToast('Opening report for download...');
+                setTimeout(() => {
+                    window.location.href = 'report.html';
+                }, 1000);
+            }
+        }
+
+        function showDeleteModal(dfaId) {
+            deleteTargetId = dfaId;
+            document.getElementById('deleteModalDfaId').textContent = dfaId;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            deleteTargetId = null;
+            document.getElementById('deleteModal').classList.remove('show');
+        }
+
+        function confirmDelete() {
+            if (deleteTargetId) {
+                const allDFAData = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+                delete allDFAData[deleteTargetId];
+                localStorage.setItem('allDFAData', JSON.stringify(allDFAData));
+
+                const dfaList = JSON.parse(localStorage.getItem('dfaList') || '[]');
+                const updatedList = dfaList.filter(dfa => dfa.dfaId !== deleteTargetId);
+                localStorage.setItem('dfaList', JSON.stringify(updatedList));
+
+                showToast('DFA deleted successfully');
+                closeDeleteModal();
+                loadAllDFAs();
+            }
+        }
+
+        function confirmClearAll() {
+            const count = allDFAs.length;
+            if (count === 0) {
+                showToast('No DFAs to clear', true);
+                return;
+            }
+            
+            document.getElementById('clearAllCount').textContent = count;
+            document.getElementById('clearAllModal').classList.add('show');
+        }
+
+        function closeClearAllModal() {
+            document.getElementById('clearAllModal').classList.remove('show');
+        }
+
+        function clearAllDFAs() {
+            localStorage.removeItem('allDFAData');
+            localStorage.removeItem('dfaList');
+            localStorage.removeItem('currentDFA');
+            
+            showToast('All DFAs cleared successfully');
+            closeClearAllModal();
+            loadAllDFAs();
+        }
+
+        function exportAllData() {
+            if (allDFAs.length === 0) {
+                showToast('No DFAs to export', true);
+                return;
+            }
+
+            const allDFAData = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            const dataStr = JSON.stringify(allDFAData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            const timestamp = new Date().toISOString().split('T')[0];
+            link.download = `all-dfas-${timestamp}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showToast(`Exported ${allDFAs.length} DFA${allDFAs.length !== 1 ? 's' : ''}`);
+        }
+
+        function createNew() {
+            window.location.href = 'index.html';
+        }
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (isError ? ' error' : '');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                createNew();
+            }
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+            if (e.key === 'Escape') {
+                closeDeleteModal();
+                closeClearAllModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+
+    <title>DFA WebApp - AMR Facility Analysis</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(145deg, #083B37 0%, #147A72 55%, #1A9B8E 100%);
+            --purple-gradient: linear-gradient(145deg, #0B4F4A 0%, #147A72 100%);
+            --success-gradient: linear-gradient(145deg, #1B7A4E 0%, #2D9B6A 100%);
+            --purple-color: #147A72;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+            --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--purple-gradient);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--purple-gradient);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .header-text h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .header-text p {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .dfa-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--purple-color);
+            border: 2px solid rgba(155, 89, 182, 0.2);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-header {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-back {
+            background: white;
+            color: var(--text-dark);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-back:hover {
+            border-color: var(--purple-color);
+            color: var(--purple-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .progress-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 48px;
+            right: 48px;
+            height: 4px;
+            background: var(--border-color);
+            z-index: 0;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .progress-step.completed .step-circle {
+            background: linear-gradient(145deg, #1B7A4E 0%, #2D9B6A 100%);
+            border-color: #00f2fe;
+            color: white;
+        }
+
+        .progress-step.active .step-circle {
+            background: var(--purple-gradient);
+            border-color: var(--purple-color);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 16px rgba(155, 89, 182, 0.4);
+        }
+
+        .step-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        .progress-step.active .step-label {
+            color: var(--purple-color);
+        }
+
+        .progress-step.completed .step-label {
+            color: #00f2fe;
+        }
+
+        .info-banner {
+            background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+            border-left: 4px solid #0ea5e9;
+            padding: 20px 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: start;
+            gap: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-banner-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .info-banner-text p {
+            margin: 0 0 8px 0;
+            color: #0c4a6e;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .info-banner-text strong {
+            color: #075985;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stats-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 3px solid var(--border-color);
+        }
+
+        .stats-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--purple-gradient);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stats-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid var(--border-color);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            border-color: var(--purple-color);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: var(--purple-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            border-color: var(--purple-color);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .step-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--border-color);
+        }
+
+        .step-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .step-number-badge {
+            width: 48px;
+            height: 48px;
+            background: var(--purple-gradient);
+            color: white;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            box-shadow: var(--shadow-md);
+        }
+
+        .step-stats-badge {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            color: var(--purple-color);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 2px solid rgba(155, 89, 182, 0.2);
+        }
+
+        .category-block {
+            margin-top: 22px;
+            padding: 18px 18px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            background: #f7faf9;
+        }
+
+        .category-block:first-of-type {
+            margin-top: 8px;
+        }
+
+        .category-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #d7e5e2;
+        }
+
+        .category-block-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #0B4F4A;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-block-count {
+            font-size: 12px;
+            font-weight: 600;
+            color: #5C6B7A;
+            background: white;
+            border: 1px solid #d7e5e2;
+            border-radius: 999px;
+            padding: 4px 10px;
+        }
+
+        .analysis-table-container {
+            overflow-x: auto;
+            margin-top: 8px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            background: white;
+        }
+
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .analysis-table thead {
+            background: var(--purple-gradient);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .analysis-table th {
+            padding: 16px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .analysis-table td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        .analysis-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .analysis-table tbody tr:hover {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+
+        .row-number {
+            font-weight: 700;
+            color: var(--purple-color);
+            text-align: center;
+            font-size: 14px;
+        }
+
+        select, input[type="text"], textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        select:focus, input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--purple-color);
+            box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .applicability-select {
+            font-weight: 600;
+        }
+
+        .applicability-yes {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        .applicability-no {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        .facility-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .facility-hosur {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        .facility-auric {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        .facility-both {
+            background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+            color: #6b21a8;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 24px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-xl);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: var(--purple-gradient);
+            color: white;
+            padding: 28px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: white;
+            color: var(--purple-color);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 32px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-form-group {
+            margin-bottom: 24px;
+        }
+
+        .modal-form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .facility-selection-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .facility-option {
+            position: relative;
+        }
+
+        .facility-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .facility-option-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 20px;
+            background: #f8f9fa;
+            border: 3px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .facility-option input[type="radio"]:checked + .facility-option-label {
+            background: linear-gradient(145deg, #E6F5F3 0%, #D4EFEB 100%);
+            border-color: var(--purple-color);
+            transform: scale(1.05);
+        }
+
+        .facility-option-icon {
+            font-size: 32px;
+        }
+
+        .facility-option-text {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        .facility-forms-container {
+            display: none;
+        }
+
+        .facility-forms-container.active {
+            display: block;
+        }
+
+        .facility-form-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .facility-form-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .facility-form-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--purple-gradient);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .facility-form-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .modal-footer {
+            padding: 24px 32px;
+            border-top: 2px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            background: #f8f9fa;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 32px;
+            padding: 24px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-save {
+            background: var(--purple-gradient);
+            color: white;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(155, 89, 182, 0.4);
+        }
+
+        .btn-export {
+            background: linear-gradient(145deg, #1A3A4A 0%, #C45C26 100%);
+            color: white;
+        }
+
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-next {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-dark);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--purple-color);
+            color: var(--purple-color);
+        }
+
+        .btn-done {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .btn-done:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79, 172, 254, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            z-index: 3000;
+            font-weight: 600;
+            animation: slideInRight 0.3s ease;
+            border: 2px solid #6ee7b7;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .header-card {
+                padding: 20px;
+            }
+
+            .step-card {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .facility-selection-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    
+
+        /* Shared form / wizard polish */
+        .container, .header-card, .progress-card, .form-card, .content-card,
+        .filters-section, .controls-section, .table-container, .header {
+            box-shadow: 0 8px 24px rgba(21,32,43,0.07) !important;
+            border: 1px solid #D3DBE3;
+        }
+        .header, .header-card { animation: dfa-nav-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .form-container, .form-card, .content-card, .progress-card,
+        .filters-section, .controls-section, .table-container, .stats-container {
+            animation: dfa-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+        }
+        .header h1, .header-text h1, .header-left h1 {
+            font-family: 'Space Grotesk', sans-serif !important; letter-spacing: -0.02em;
+        }
+        .btn, .btn-primary, .btn-header, .add-platform-btn, .load-selected-btn,
+        .filter-toggle-btn, .nav-btn, .action-btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+        }
+        .btn:hover:not(:disabled), .btn-primary:hover, .nav-btn:hover { transform: translateY(-1px); }
+        input:focus, select:focus, textarea:focus, .filter-input:focus, .filter-select:focus,
+        .search-input:focus, .search-box input:focus {
+            border-color: #147A72 !important; box-shadow: 0 0 0 3px rgba(20,122,114,0.12) !important;
+        }
+        .spinner { border-top-color: #147A72 !important; }
+        .progress-step.active .progress-circle,
+        .progress-step.active .step-circle,
+        .step-circle.active {
+            background: #147A72 !important; border-color: #147A72 !important; color: white !important;
+        }
+        .progress-step.active .progress-label,
+        .progress-step.active .step-label { color: #0B4F4A !important; }
+
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-card">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="header-icon">🏭</div>
+                    <div class="header-text">
+                        <h1>AMR Facility Analysis</h1>
+                        <p>Analyze AMR requirements step-wise across manufacturing facilities</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="dfa-badge" id="dfaIdBadge">
+                        <span>🔖</span>
+                        <span>Loading...</span>
+                    </div>
+                    <button class="btn-header btn-back" onclick="window.location.href='amr-requirements.html'">
+                        <span>←</span>
+                        <span>Back</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-card">
+            <div class="progress-steps">
+                <div class="progress-step completed">
+                    <div class="step-circle">✓</div>
+                    <span class="step-label">REVUP</span>
+                </div>
+                <div class="progress-step completed">
+                    <div class="step-circle">✓</div>
+                    <span class="step-label">PFD</span>
+                </div>
+                <div class="progress-step completed">
+                    <div class="step-circle">✓</div>
+                    <span class="step-label">AMR</span>
+                </div>
+                <div class="progress-step active">
+                    <div class="step-circle">4</div>
+                    <span class="step-label">Facility</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-banner">
+            <div class="info-banner-icon">💡</div>
+            <div class="info-banner-text">
+                <p><strong>How it works:</strong> Every AMR from Requirements appears here — Pass, Fail, Conditionally Passed, or any status — grouped by category inside each step.</p>
+                <p>1️⃣ For each requirement, choose <strong>Facility Impact?</strong> Yes or No (applicability)</p>
+                <p>2️⃣ If <strong>Yes</strong> → choose facility (HOSUR / AURIC / BOTH) and set status: <strong>Pass / Fail / Partially Passed</strong></p>
+                <p>3️⃣ Also fill Tool, Impact, Machine CTQ, <strong>Cost Impact</strong>, and <strong>Alignment with F and T</strong> (Pending / Done)</p>
+                <p>4️⃣ Report layout &amp; scoring stay as previously configured</p>
+            </div>
+        </div>
+
+        <div class="stats-card">
+            <div class="stats-header">
+                <div class="stats-icon">📊</div>
+                <h2 class="stats-title">Overall Statistics</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalSteps">0</div>
+                    <div class="stat-label">Total Steps</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalAMRs">0</div>
+                    <div class="stat-label">Total AMRs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="applicableCount">0</div>
+                    <div class="stat-label">Facility Impact</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="completedCount">0</div>
+                    <div class="stat-label">Fail Entries</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="stepWiseContainer"></div>
+
+        <div class="action-buttons">
+            <button class="btn btn-save" onclick="saveAnalysis()">
+                <span>💾</span>
+                <span>Save Analysis</span>
+            </button>
+            <button class="btn btn-export" onclick="exportToExcel()">
+                <span>📥</span>
+                <span>Export to Excel</span>
+            </button>
+            <button class="btn btn-next" onclick="proceedToReport()">
+                <span>Next to Report</span>
+                <span>→</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Facility Selection Modal -->
+    <div class="modal-overlay" id="facilityModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>
+                    <span>🏭</span>
+                    <span>Facility Analysis Details</span>
+                </h2>
+                <button class="modal-close" onclick="closeFacilityModal()">✕</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="modal-form-group">
+                    <label class="modal-form-label">AMR ID:</label>
+                    <input type="text" id="modalAmrId" readonly style="background: #f0f0f0;">
+                </div>
+
+                <div class="modal-form-group">
+                    <label class="modal-form-label">AMR Requirement:</label>
+                    <textarea id="modalAmrRequirement" readonly rows="2" style="background: #f0f0f0;"></textarea>
+                </div>
+
+                <!-- Facility Selection -->
+                <div class="modal-form-group">
+                    <label class="modal-form-label">Select Facility: <span style="color: red;">*</span></label>
+                    <div class="facility-selection-group">
+                        <div class="facility-option">
+                            <input type="radio" id="facilityHosur" name="facilityChoice" value="HOSUR" onchange="updateFacilityForms()">
+                            <label for="facilityHosur" class="facility-option-label">
+                                <div class="facility-option-icon">🏢</div>
+                                <div class="facility-option-text">HOSUR</div>
+                            </label>
+                        </div>
+                        <div class="facility-option">
+                            <input type="radio" id="facilityAuric" name="facilityChoice" value="AURIC" onchange="updateFacilityForms()">
+                            <label for="facilityAuric" class="facility-option-label">
+                                <div class="facility-option-icon">🏭</div>
+                                <div class="facility-option-text">AURIC</div>
+                            </label>
+                        </div>
+                        <div class="facility-option">
+                            <input type="radio" id="facilityBoth" name="facilityChoice" value="BOTH" onchange="updateFacilityForms()">
+                            <label for="facilityBoth" class="facility-option-label">
+                                <div class="facility-option-icon">🏗️</div>
+                                <div class="facility-option-text">BOTH</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Forms Container -->
+                <div class="facility-forms-container" id="facilityFormsContainer">
+                    <!-- HOSUR Form -->
+                    <div class="facility-form-card" id="hosurForm" style="display: none;">
+                        <div class="facility-form-header">
+                            <div class="facility-form-icon">🏢</div>
+                            <div class="facility-form-title">HOSUR Facility</div>
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">AMR Status: <span style="color: red;">*</span></label>
+                            <select id="hosurStatus">
+                                <option value="Pass">✅ Pass</option>
+                                <option value="Fail" selected>❌ Fail</option>
+                                <option value="Partially Passed">◐ Partially Passed</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Tool:</label>
+                            <input type="text" id="hosurTool" placeholder="Enter tool name...">
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Impact:</label>
+                            <textarea id="hosurImpact" placeholder="Describe impact..." rows="3"></textarea>
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Machine CTQ:</label>
+                            <input type="text" id="hosurMachineCTQ" placeholder="Enter machine CTQ...">
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Cost Impact:</label>
+                            <input type="text" id="hosurCostImpact" placeholder="Enter cost impact...">
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Alignment with F and T: <span style="color: red;">*</span></label>
+                            <select id="hosurAlignmentFT">
+                                <option value="Pending" selected>Pending</option>
+                                <option value="Done">Done</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- AURIC Form -->
+                    <div class="facility-form-card" id="auricForm" style="display: none;">
+                        <div class="facility-form-header">
+                            <div class="facility-form-icon">🏭</div>
+                            <div class="facility-form-title">AURIC Facility</div>
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">AMR Status: <span style="color: red;">*</span></label>
+                            <select id="auricStatus">
+                                <option value="Pass">✅ Pass</option>
+                                <option value="Fail" selected>❌ Fail</option>
+                                <option value="Partially Passed">◐ Partially Passed</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Tool:</label>
+                            <input type="text" id="auricTool" placeholder="Enter tool name...">
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Impact:</label>
+                            <textarea id="auricImpact" placeholder="Describe impact..." rows="3"></textarea>
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Machine CTQ:</label>
+                            <input type="text" id="auricMachineCTQ" placeholder="Enter machine CTQ...">
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Cost Impact:</label>
+                            <input type="text" id="auricCostImpact" placeholder="Enter cost impact...">
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Alignment with F and T: <span style="color: red;">*</span></label>
+                            <select id="auricAlignmentFT">
+                                <option value="Pending" selected>Pending</option>
+                                <option value="Done">Done</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeFacilityModal()">
+                    <span>Cancel</span>
+                </button>
+                <button class="btn btn-done" onclick="saveFacilityDetails()">
+                    <span>✓</span>
+                    <span>Done</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentDFA = null;
+        let analysisData = [];
+        let currentEditingRow = null;
+
+        const AMR_REQUIREMENTS_DATABASE = {
+            "AMR_CP_1": { id: "AMR_CP_1", requirement: "Fastener pitch_normal joints - Normal joints pitch of fasteners should be coarse", category: "Common Points", priority: 3, weightage: 3 },
+            "AMR_CP_2": { id: "AMR_CP_2", requirement: "Fastener pitch_critical joints - Normal joints pitch of fasteners should be coarse but in exceptional cases can be fine", category: "Common Points", priority: 3, weightage: 3 },
+            "AMR_CP_3": { id: "AMR_CP_3", requirement: "No loose washer - No loose washer on any of the fasteners", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_4": { id: "AMR_CP_4", requirement: "Common fasteners - Common fasteners in same sub assembly/Zones", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_5": { id: "AMR_CP_5", requirement: "Tool Clearance - 50mm radial clearance cylinder for all M8+ fasteners", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_6": { id: "AMR_CP_6", requirement: "Allen fasteners - No allen button head fasteners for less than M5 bolts", category: "Common Points", priority: 3, weightage: 3 },
+            "AMR_CP_7": { id: "AMR_CP_7", requirement: "Sharp Edges - Min 0.5mm radius on sheet metal", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_8": { id: "AMR_CP_8", requirement: "Fasteners grade - Grade of mating fasteners should be checked", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_9": { id: "AMR_CP_9", requirement: "Fastener direction - No assembly of fasteners in +ve Z direction", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_10": { id: "AMR_CP_10", requirement: "Decals variants - Variant mixup", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_11": { id: "AMR_CP_11", requirement: "Layout Requirement - Extra Space to be allocated", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_12": { id: "AMR_CP_12", requirement: "FTG Requirement - Any new or modification requirement in FTG", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CP_13": { id: "AMR_CP_13", requirement: "FTG Requirement - Mix up between FTG", category: "Common Points", priority: 5, weightage: 5 },
+            "AMR_CF_1": { id: "AMR_CF_1", requirement: "Grounding Points - Paint-free masking area ø15mm, for earthings", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_2": { id: "AMR_CF_2", requirement: "VIN Stamp - Flat area 100x20mm for marking VIN Scribe depth > 0.2mm", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_3": { id: "AMR_CF_3", requirement: "Bearing Fits - Head tube bearing cup press fit interference 0.015-0.09mm", category: "Chassis & Frame", priority: 3, weightage: 3 },
+            "AMR_CF_4": { id: "AMR_CF_4", requirement: "Frame lifting points - 3 defined Datum targets (A1/A2/A3) for conveyor hangers", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_5": { id: "AMR_CF_5", requirement: "ED Drain - Holes ø6mm min at all local Z-minima (drainage points)", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_6": { id: "AMR_CF_6", requirement: "Sharp edges - Chamfer, buffing operation on all potential exposed area from parts to operator", category: "Chassis & Frame", priority: 3, weightage: 3 },
+            "AMR_CF_7": { id: "AMR_CF_7", requirement: "Routing Clamps - Flexible - Flexible clamp for routing areas", category: "Chassis & Frame", priority: 3, weightage: 3 },
+            "AMR_CF_8": { id: "AMR_CF_8", requirement: "Routing Clamps - Rigid - Rigid routing clamp should be always in open condition & no closing requirement after assembly", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_9": { id: "AMR_CF_9", requirement: "Spring assy - side stand, center stand - Efforts for spring assy should be below - TBD", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_CF_10": { id: "AMR_CF_10", requirement: "Spring symmetric - side stand, center stand - All spring should be symmetric to avoid wrong assy", category: "Chassis & Frame", priority: 5, weightage: 5 },
+            "AMR_T_1": { id: "AMR_T_1", requirement: "Gear grading - No gear grading, if grading then clear strategy sign off", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_2": { id: "AMR_T_2", requirement: "Traceability - Data matrix on all parts on accessible location, with standard format", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_3": { id: "AMR_T_3", requirement: "NVH - NVH specs conclusion & sign off before MK3", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_4": { id: "AMR_T_4", requirement: "UVW cable Design Poka Yoke - Wrong assembly should not happen, Requirement is design Poka Yoke", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_5": { id: "AMR_T_5", requirement: "Millipore specs - If no inhouse washing, GB level no millipore spec", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_6": { id: "AMR_T_6", requirement: "Oil grade - Oil grade should be 80W90 (common with current product/Line) if two or more product on same line", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_7": { id: "AMR_T_7", requirement: "Locating Datums - For Bearing pressing, casting should have locating datums for pressing", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_8": { id: "AMR_T_8", requirement: "Oil filling - Port geometry supports adapters (SAE J1231 profile)", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_9": { id: "AMR_T_9", requirement: "Bearing pressing - No grease or oil application on bearings/gear case while bearing pressing", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_10": { id: "AMR_T_10", requirement: "Bearing interference - Wrt material interference should be - TBD", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_11": { id: "AMR_T_11", requirement: "Breather - Vertical orientation (Z+ vector)", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_12": { id: "AMR_T_12", requirement: "Belt tension - Range of tension specs should be base actual variation on parts/assembly", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_T_13": { id: "AMR_T_13", requirement: "Pulley alignment - No pulley alignment required, should control through design", category: "Powertrain", priority: 3, weightage: 3 },
+            "AMR_T_14": { id: "AMR_T_14", requirement: "Motor alignment - No motor alignment required, should control through design", category: "Powertrain", priority: 5, weightage: 5 },
+            "AMR_WH_1": { id: "AMR_WH_1", requirement: "Routing Points - Clip spacing max 200mm for support", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_2": { id: "AMR_WH_2", requirement: "Pass-Thru - IP67 rated coupler for all water exposure areas", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_3": { id: "AMR_WH_3", requirement: "Steering Loop - Min 50mm loop length at steering pivot", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_4": { id: "AMR_WH_4", requirement: "Fuse Access/Pcan - Internal coupler require Access via 1 panel removal, example P-can", category: "Wiring & Harness", priority: 3, weightage: 3 },
+            "AMR_WH_5": { id: "AMR_WH_5", requirement: "Fouling/touch zones - Tape overlap 50% min in high wear zones", category: "Wiring & Harness", priority: 3, weightage: 3 },
+            "AMR_WH_6": { id: "AMR_WH_6", requirement: "Insert/Push Force - Grommet/push clip insertion force < 40N MANUAL limit", category: "Wiring & Harness", priority: 3, weightage: 3 },
+            "AMR_WH_7": { id: "AMR_WH_7", requirement: "Flexible metal clamp - No hard clamp opening & closing, flexible metal clamp for routing", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_8": { id: "AMR_WH_8", requirement: "No of cable ties - No loose cable ties", category: "Wiring & Harness", priority: 3, weightage: 3 },
+            "AMR_WH_9": { id: "AMR_WH_9", requirement: "Marking for loose cable ties - Marking on wiring/cables for loose cable tie routing", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_10": { id: "AMR_WH_10", requirement: "Coupler assembly force - Coupler insertion/assembly force < 40N MANUAL limit", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_11": { id: "AMR_WH_11", requirement: "Grease on coupler - No grease on couplers", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_WH_12": { id: "AMR_WH_12", requirement: "Power cable symmetric ends - All power cable should have symmetric ends with same size studs", category: "Wiring & Harness", priority: 5, weightage: 5 },
+            "AMR_BST_1": { id: "AMR_BST_1", requirement: "Shock orientation - Design poka yoke to avoid shock wrong orientation assy", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_2": { id: "AMR_BST_2", requirement: "Shock eyelet - Top & bottom eyelet should have enough tolerance so that it can fit/align on frame", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_3": { id: "AMR_BST_3", requirement: "Shock supplier mix up - Rear & front shock should not have limitation of same source part assembly, any combination should be ok", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_4": { id: "AMR_BST_4", requirement: "Bleed Screw - Nipple accessible with open end spanner/ring spanner", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_5": { id: "AMR_BST_5", requirement: "Wheel speed sensor gap - Wheel speed sensor gap should be control through design", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_6": { id: "AMR_BST_6", requirement: "Brake oil level visibility - Master Cylinder level glass visible in assembly or at vehicle level", category: "Brakes, Suspension & Tyres", priority: 5, weightage: 5 },
+            "AMR_BST_7": { id: "AMR_BST_7", requirement: "CBS setting specs - CBS setting should be at sub assy level with enough accessibility", category: "Brakes, Suspension & Tyres", priority: 3, weightage: 3 },
+            "AMR_BST_8": { id: "AMR_BST_8", requirement: "Brake EOL spec - Load vs distance, wheel freeness with SOP need to defined", category: "Brakes, Suspension & Tyres", priority: 3, weightage: 3 },
+            "AMR_BST_9": { id: "AMR_BST_9", requirement: "Hose routing - Guide clamps & position should be given on hoses", category: "Brakes, Suspension & Tyres", priority: 3, weightage: 3 },
+            "AMR_EP_1": { id: "AMR_EP_1", requirement: "Head lamp - Headlamp adjustment provision at vehicle level should available", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_2": { id: "AMR_EP_2", requirement: "Headlamp aiming - Headlamp aiming spec should be considered & setting has to be done at supplier end", category: "Electrical Peripherals", priority: 3, weightage: 3 },
+            "AMR_EP_3": { id: "AMR_EP_3", requirement: "All Lamps gap & flush - 2 way & 4 way locators should be available on mating parts to control gap", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_4": { id: "AMR_EP_4", requirement: "Headlamp corner rat holes - Clear spec for rat holes (corner gaps) should be defined as it can not be zero", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_5": { id: "AMR_EP_5", requirement: "QR code locations - All peripheral parts QR code location needs to sign off as scanning feasibility", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_6": { id: "AMR_EP_6", requirement: "Dashboard flashing timings - Timings & flashing method to be sign off", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_7": { id: "AMR_EP_7", requirement: "ECU flashing timings - Timings for all ECU flashing should be less that 2 mins", category: "Electrical Peripherals", priority: 5, weightage: 5 },
+            "AMR_EP_8": { id: "AMR_EP_8", requirement: "Dashboard SIM assy - SIM should be common despite domestic or international, allocation can be done after assembly of SIM to dashboard", category: "Electrical Peripherals", priority: 3, weightage: 3 },
+            "AMR_BP_1": { id: "AMR_BP_1", requirement: "Tongue & groove interactions - Maximum areas should be with tongue & groove mechanism for better fit & finish", category: "Bodyworks & Plastics", priority: 3, weightage: 3 },
+            "AMR_BP_2": { id: "AMR_BP_2", requirement: "2 way & 4 way locators - Maximum areas should have 2W & 4W locators", category: "Bodyworks & Plastics", priority: 3, weightage: 3 },
+            "AMR_BP_3": { id: "AMR_BP_3", requirement: "Snap Force - Insertion 10N ± 3N; Retention 25N min", category: "Bodyworks & Plastics", priority: 3, weightage: 3 },
+            "AMR_BP_4": { id: "AMR_BP_4", requirement: "Panel Gaps - Nominal 1.5mm ± 0.5mm (3-sigma)", category: "Bodyworks & Plastics", priority: 3, weightage: 3 },
+            "AMR_BP_5": { id: "AMR_BP_5", requirement: "Sequence - Assemble Rear-to-center & Front to center logic enforced", category: "Bodyworks & Plastics", priority: 5, weightage: 5 },
+            "AMR_BP_6": { id: "AMR_BP_6", requirement: "Drainage hole & draft - parts like glove box, storage box wherever water can stay, should have drain hole & draft", category: "Bodyworks & Plastics", priority: 5, weightage: 5 },
+            "AMR_BP_7": { id: "AMR_BP_7", requirement: "Rubber caps - No glue application on rubber caps", category: "Bodyworks & Plastics", priority: 3, weightage: 3 },
+        };
+
+        function getAMRRequirementText(amrId) {
+            let id = amrId;
+            if (id && typeof id === 'object') id = id.id || id.amrId || '';
+            if (typeof id === 'string') {
+                const m = id.match(/(AMR_[A-Z]+_\d+)/);
+                if (m) id = m[1];
+            }
+            const info = AMR_REQUIREMENTS_DATABASE[id];
+            if (!info) return id || '';
+            return typeof info === 'string' ? info : (info.requirement || id);
+        }
+
+        window.addEventListener('load', function() {
+            loadCurrentDFA();
+            loadAnalysisData();
+        });
+
+        function loadCurrentDFA() {
+            const dfaData = localStorage.getItem('currentDFA');
+            if (dfaData) {
+                currentDFA = JSON.parse(dfaData);
+                document.getElementById('dfaIdBadge').innerHTML = `<span>🔖</span><span>${currentDFA.dfaId}</span>`;
+            } else {
+                alert('No active DFA session found. Redirecting to home...');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function loadAnalysisData() {
+            if (!currentDFA || !currentDFA.amr || !currentDFA.amr.steps) {
+                showToast('⚠️ No AMR data found. Please complete AMR selection first.', true);
+                setTimeout(() => {
+                    window.location.href = 'amr-requirements.html';
+                }, 2000);
+                return;
+            }
+
+            if (currentDFA.facilityAnalysis && currentDFA.facilityAnalysis.length > 0) {
+                analysisData = currentDFA.facilityAnalysis;
+            } else {
+                analysisData = [];
+            }
+
+            renderStepWise();
+            updateOverallStats();
+        }
+
+        function renderStepWise() {
+            const container = document.getElementById('stepWiseContainer');
+            container.innerHTML = '';
+
+            if (!currentDFA.amr.steps || currentDFA.amr.steps.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>No Steps Found</h3>
+                        <p>Please complete AMR selection in the previous step</p>
+                    </div>
+                `;
+                return;
+            }
+
+            currentDFA.amr.steps.forEach((step, stepIndex) => {
+                renderStepCard(step, stepIndex);
+            });
+        }
+
+        const CATEGORY_NAMES = {
+            AMR_CP: 'Common Points',
+            AMR_CF: 'Chassis & Frame',
+            AMR_T: 'Powertrain',
+            AMR_WH: 'Wiring & Harness',
+            AMR_BST: 'Brakes, Suspension & Tyres',
+            AMR_EP: 'Electrical Peripherals',
+            AMR_BP: 'Bodyworks & Plastics'
+        };
+
+        function getAmrStatusFromStep(stepNumber, amrId) {
+            const step = (currentDFA.amr && currentDFA.amr.steps || []).find(s => s.number === stepNumber);
+            if (!step || !step.amrStatuses) return 'Pass';
+            return step.amrStatuses[amrId] || 'Pass';
+        }
+
+        function sortAmrIdsByStatus(step, ids) {
+            const order = { 'Fail': 0, 'Conditionally Passed': 1, 'Pass': 2, 'NA': 3 };
+            return (ids || []).slice().sort((a, b) => {
+                const sa = (step.amrStatuses && step.amrStatuses[a]) || 'Pass';
+                const sb = (step.amrStatuses && step.amrStatuses[b]) || 'Pass';
+                return (order[sa] != null ? order[sa] : 9) - (order[sb] != null ? order[sb] : 9);
+            });
+        }
+
+        function getStepCategoryGroups(step) {
+            const groups = [];
+            const commonIds = (step.commonPointsAMRs && step.commonPointsAMRs.length)
+                ? step.commonPointsAMRs.slice()
+                : (step.allSelectedAMRs || []).filter(id => String(id).startsWith('AMR_CP_'));
+
+            if (commonIds.length) {
+                groups.push({
+                    key: 'AMR_CP',
+                    name: 'Common Points',
+                    amrIds: sortAmrIdsByStatus(step, commonIds)
+                });
+            }
+
+            (step.categorySections || []).forEach((sec, i) => {
+                if (!sec || !sec.category) return;
+                const ids = (sec.selectedAMRs || []).slice();
+                if (!ids.length) return;
+                groups.push({
+                    key: `${sec.category}_${i}`,
+                    name: CATEGORY_NAMES[sec.category] || sec.category,
+                    amrIds: sortAmrIdsByStatus(step, ids)
+                });
+            });
+
+            if (!groups.length && step.allSelectedAMRs && step.allSelectedAMRs.length) {
+                const byCat = {};
+                step.allSelectedAMRs.forEach(id => {
+                    const info = AMR_REQUIREMENTS_DATABASE[id];
+                    const name = (info && info.category) || 'Other';
+                    if (!byCat[name]) byCat[name] = [];
+                    byCat[name].push(id);
+                });
+                Object.keys(byCat).forEach((name, i) => {
+                    groups.push({
+                        key: `fallback_${i}`,
+                        name,
+                        amrIds: sortAmrIdsByStatus(step, byCat[name])
+                    });
+                });
+            }
+
+            return groups;
+        }
+
+        function renderStepCard(step, stepIndex) {
+            const container = document.getElementById('stepWiseContainer');
+            
+            const stepCard = document.createElement('div');
+            stepCard.className = 'step-card';
+            
+            const groups = getStepCategoryGroups(step);
+            const allCount = groups.reduce((sum, g) => sum + g.amrIds.length, 0);
+            const completedAMRs = analysisData.filter(item => 
+                item.stepNumber === step.number && item.applicable === 'Yes'
+            ).length;
+
+            const groupsHtml = groups.length
+                ? groups.map(group => `
+                    <div class="category-block" data-category="${group.key}">
+                        <div class="category-block-header">
+                            <div class="category-block-title">
+                                <span>📂</span>
+                                <span>${group.name}</span>
+                            </div>
+                            <div class="category-block-count">${group.amrIds.length} requirements</div>
+                        </div>
+                        <div class="analysis-table-container">
+                            <table class="analysis-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 4%;">#</th>
+                                        <th style="width: 36%;">AMR Requirement (full line)</th>
+                                        <th style="width: 12%;">AMR Status</th>
+                                        <th style="width: 12%;">Facility Impact?</th>
+                                        <th style="width: 10%;">Facility</th>
+                                        <th style="width: 10%;">Facility Status</th>
+                                        <th style="width: 16%;">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="step_${step.number}_${group.key}_tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                `).join('')
+                : `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>No AMRs in this step</p>
+                    </div>
+                `;
+
+            stepCard.innerHTML = `
+                <div class="step-card-header">
+                    <div class="step-title">
+                        <div class="step-number-badge">${step.number}</div>
+                        <span>Step ${step.number} - Facility Analysis</span>
+                    </div>
+                    <div class="step-stats-badge">
+                        ${allCount} AMRs | ${completedAMRs} Facility entries
+                    </div>
+                </div>
+                ${groupsHtml}
+            `;
+
+            container.appendChild(stepCard);
+
+            groups.forEach(group => {
+                const tbodyId = `step_${step.number}_${group.key}_tbody`;
+                group.amrIds.forEach((amrId, index) => {
+                    renderAMRRow(step.number, amrId, index, tbodyId);
+                });
+            });
+        }
+
+        function renderAMRRow(stepNumber, amrId, rowIndex, tbodyId) {
+            const tbody = document.getElementById(tbodyId || `step_${stepNumber}_tbody`);
+            if (!tbody) return;
+
+            const amrInfo = AMR_REQUIREMENTS_DATABASE[amrId];
+            const requirement = getAMRRequirementText(amrId);
+            const priority = amrInfo && amrInfo.priority ? amrInfo.priority : '-';
+            const weightage = amrInfo && amrInfo.weightage ? amrInfo.weightage : '-';
+            const amrStatus = getAmrStatusFromStep(stepNumber, amrId);
+
+            const existingEntries = analysisData.filter(item => 
+                item.stepNumber === stepNumber && item.amrId === amrId
+            );
+
+            const hasData = existingEntries.length > 0;
+            const applicable = hasData ? 'Yes' : 'No';
+
+            let facilityDisplay = '-';
+            if (existingEntries.length === 1) {
+                facilityDisplay = `<span class="facility-badge facility-${existingEntries[0].facility.toLowerCase()}">${existingEntries[0].facility}</span>`;
+            } else if (existingEntries.length === 2) {
+                facilityDisplay = `<span class="facility-badge facility-both">BOTH</span>`;
+            }
+
+            let statusDisplay = '-';
+            if (existingEntries.length > 0) {
+                statusDisplay = existingEntries.map(entry => 
+                    `<div style="margin-bottom: 4px;"><strong>${entry.facility}:</strong> <span style="padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; background: ${getStatusColor(entry.status)};">${entry.status}</span></div>`
+                ).join('');
+            }
+
+            let detailsText = '—';
+            if (existingEntries.length > 0) {
+                detailsText = existingEntries.map(entry => 
+                    `<div style="margin-bottom: 8px; padding: 6px; background: #f8f9fa; border-radius: 4px;">
+                        <strong>${entry.facility}:</strong><br>
+                        Tool: ${entry.tool || 'N/A'}<br>
+                        Impact: ${entry.impact || 'N/A'}<br>
+                        Cost Impact: ${entry.costImpact || 'N/A'}<br>
+                        Alignment F&amp;T: ${entry.alignmentFT || 'N/A'}
+                    </div>`
+                ).join('');
+            }
+
+            const row = document.createElement('tr');
+            row.id = `row_${stepNumber}_${amrId}`;
+            row.dataset.tbodyId = tbody.id;
+            row.dataset.rowIndex = String(rowIndex);
+
+            row.innerHTML = `
+                <td class="row-number">${rowIndex + 1}</td>
+                <td style="font-size: 13px; line-height: 1.45;">
+                    <div style="font-weight: 700; color: #0B4F4A; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px;">${amrId}</div>
+                    <div style="color: #15202B;">${requirement}</div>
+                    <div style="margin-top: 6px; font-size: 11px; color: #5C6B7A;">Priority ${priority} · Weightage ${weightage} · Rule value ${priority !== '-' && weightage !== '-' ? (priority * weightage) : '-'}</div>
+                </td>
+                <td style="font-size: 11px;">
+                    <span style="padding: 4px 8px; border-radius: 4px; font-weight: 600; background: ${getStatusColor(amrStatus)};">${amrStatus}</span>
+                </td>
+                <td>
+                    <select class="applicability-select ${applicable === 'Yes' ? 'applicability-yes' : 'applicability-no'}" 
+                            onchange="handleApplicabilityChange(${stepNumber}, '${amrId}', this.value)"
+                            title="Mark if this AMR has facility impact">
+                        <option value="No" ${applicable === 'No' ? 'selected' : ''}>No</option>
+                        <option value="Yes" ${applicable === 'Yes' ? 'selected' : ''}>Yes</option>
+                    </select>
+                </td>
+                <td>${facilityDisplay}</td>
+                <td style="font-size: 11px;">${statusDisplay}</td>
+                <td style="font-size: 11px; color: #666;">${detailsText}</td>
+            `;
+
+            tbody.appendChild(row);
+        }
+
+        function getStatusColor(status) {
+            if (status === 'Pass') return 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)';
+            if (status === 'Fail') return 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
+            if (status === 'Partially Passed' || status === 'Conditionally Passed') {
+                return 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)';
+            }
+            return 'linear-gradient(135deg, #e2e3e5 0%, #d6d8db 100%)';
+        }
+
+        function fillFacilityForm(prefix, entry) {
+            const statusEl = document.getElementById(prefix + 'Status');
+            let status = entry.status || 'Fail';
+            if (status === 'NA' || status === 'Not Applicable') status = 'Fail';
+            if (status === 'Conditionally Passed') status = 'Partially Passed';
+            statusEl.value = ['Pass', 'Fail', 'Partially Passed'].includes(status) ? status : 'Fail';
+            document.getElementById(prefix + 'Tool').value = entry.tool || '';
+            document.getElementById(prefix + 'Impact').value = entry.impact || '';
+            document.getElementById(prefix + 'MachineCTQ').value = entry.machineCTQ || '';
+            document.getElementById(prefix + 'CostImpact').value = entry.costImpact || '';
+            document.getElementById(prefix + 'AlignmentFT').value = entry.alignmentFT || 'Pending';
+        }
+
+        function clearFacilityForm(prefix) {
+            document.getElementById(prefix + 'Status').value = 'Fail';
+            document.getElementById(prefix + 'Tool').value = '';
+            document.getElementById(prefix + 'Impact').value = '';
+            document.getElementById(prefix + 'MachineCTQ').value = '';
+            document.getElementById(prefix + 'CostImpact').value = '';
+            document.getElementById(prefix + 'AlignmentFT').value = 'Pending';
+        }
+
+        function readFacilityForm(prefix, stepNumber, amrId, facility) {
+            return {
+                stepNumber: stepNumber,
+                amrId: amrId,
+                applicable: 'Yes',
+                facility: facility,
+                status: document.getElementById(prefix + 'Status').value,
+                tool: document.getElementById(prefix + 'Tool').value,
+                impact: document.getElementById(prefix + 'Impact').value,
+                machineCTQ: document.getElementById(prefix + 'MachineCTQ').value,
+                costImpact: document.getElementById(prefix + 'CostImpact').value,
+                alignmentFT: document.getElementById(prefix + 'AlignmentFT').value,
+                sectionKey: `Step ${stepNumber}`,
+                stepKey: `Step ${stepNumber}`,
+                sectionName: 'Facility Analysis'
+            };
+        }
+
+        function handleApplicabilityChange(stepNumber, amrId, applicable) {
+            const selectElement = event.target;
+            
+            if (applicable === 'Yes') {
+                selectElement.className = 'applicability-select applicability-yes';
+                openFacilityModal(stepNumber, amrId);
+            } else {
+                selectElement.className = 'applicability-select applicability-no';
+                // Remove all entries for this AMR
+                analysisData = analysisData.filter(item => 
+                    !(item.stepNumber === stepNumber && item.amrId === amrId)
+                );
+                const row = document.getElementById(`row_${stepNumber}_${amrId}`);
+                if (row) {
+                    const tbodyId = row.dataset.tbodyId;
+                    const rowIndex = parseInt(row.dataset.rowIndex || '0', 10);
+                    row.remove();
+                    renderAMRRow(stepNumber, amrId, rowIndex, tbodyId);
+                }
+                updateOverallStats();
+            }
+        }
+
+        function openFacilityModal(stepNumber, amrId) {
+            currentEditingRow = { stepNumber, amrId };
+            
+            let requirement = getAMRRequirementText(amrId);
+            
+            document.getElementById('modalAmrId').value = amrId;
+            document.getElementById('modalAmrRequirement').value = requirement;
+
+            // Reset facility selection
+            document.querySelectorAll('input[name="facilityChoice"]').forEach(radio => {
+                radio.checked = false;
+            });
+
+            // Load existing data if available
+            const existingEntries = analysisData.filter(item => 
+                item.stepNumber === stepNumber && item.amrId === amrId
+            );
+
+            if (existingEntries.length > 0) {
+                if (existingEntries.length === 1) {
+                    const entry = existingEntries[0];
+                    if (entry.facility === 'HOSUR') {
+                        document.getElementById('facilityHosur').checked = true;
+                        fillFacilityForm('hosur', entry);
+                    } else {
+                        document.getElementById('facilityAuric').checked = true;
+                        fillFacilityForm('auric', entry);
+                    }
+                } else if (existingEntries.length === 2) {
+                    document.getElementById('facilityBoth').checked = true;
+                    existingEntries.forEach(entry => {
+                        if (entry.facility === 'HOSUR') fillFacilityForm('hosur', entry);
+                        else fillFacilityForm('auric', entry);
+                    });
+                }
+                updateFacilityForms();
+            } else {
+                clearFacilityForm('hosur');
+                clearFacilityForm('auric');
+                document.getElementById('facilityFormsContainer').classList.remove('active');
+            }
+
+            document.getElementById('facilityModal').classList.add('active');
+        }
+
+        function updateFacilityForms() {
+            const selectedFacility = document.querySelector('input[name="facilityChoice"]:checked')?.value;
+            const container = document.getElementById('facilityFormsContainer');
+            const hosurForm = document.getElementById('hosurForm');
+            const auricForm = document.getElementById('auricForm');
+
+            if (!selectedFacility) {
+                container.classList.remove('active');
+                hosurForm.style.display = 'none';
+                auricForm.style.display = 'none';
+                return;
+            }
+
+            container.classList.add('active');
+
+            if (selectedFacility === 'HOSUR') {
+                hosurForm.style.display = 'block';
+                auricForm.style.display = 'none';
+            } else if (selectedFacility === 'AURIC') {
+                hosurForm.style.display = 'none';
+                auricForm.style.display = 'block';
+            } else if (selectedFacility === 'BOTH') {
+                hosurForm.style.display = 'block';
+                auricForm.style.display = 'block';
+            }
+        }
+
+        function closeFacilityModal() {
+            if (currentEditingRow) {
+                const { stepNumber, amrId } = currentEditingRow;
+                const existingData = analysisData.filter(item => 
+                    item.stepNumber === stepNumber && item.amrId === amrId
+                );
+                
+                if (existingData.length === 0) {
+                    const row = document.getElementById(`row_${stepNumber}_${amrId}`);
+                    if (row) {
+                        const select = row.querySelector('.applicability-select');
+                        if (select) {
+                            select.value = 'No';
+                            select.className = 'applicability-select applicability-no';
+                        }
+                    }
+                }
+            }
+            
+            document.getElementById('facilityModal').classList.remove('active');
+            currentEditingRow = null;
+        }
+
+        function saveFacilityDetails() {
+            const selectedFacility = document.querySelector('input[name="facilityChoice"]:checked')?.value;
+
+            if (!selectedFacility) {
+                showToast('⚠️ Please select a facility!', true);
+                return;
+            }
+
+            const { stepNumber, amrId } = currentEditingRow;
+
+            // Remove existing entries for this AMR
+            analysisData = analysisData.filter(item => 
+                !(item.stepNumber === stepNumber && item.amrId === amrId)
+            );
+
+            // Add new entries based on selection
+            if (selectedFacility === 'HOSUR' || selectedFacility === 'BOTH') {
+                analysisData.push(readFacilityForm('hosur', stepNumber, amrId, 'HOSUR'));
+            }
+
+            if (selectedFacility === 'AURIC' || selectedFacility === 'BOTH') {
+                analysisData.push(readFacilityForm('auric', stepNumber, amrId, 'AURIC'));
+            }
+
+            const row = document.getElementById(`row_${stepNumber}_${amrId}`);
+            if (row) {
+                const tbodyId = row.dataset.tbodyId;
+                const rowIndex = parseInt(row.dataset.rowIndex || '0', 10);
+                row.remove();
+                renderAMRRow(stepNumber, amrId, rowIndex, tbodyId);
+            }
+
+            closeFacilityModal();
+            updateOverallStats();
+            
+            const message = selectedFacility === 'BOTH' 
+                ? '✅ Facility details saved for BOTH facilities!' 
+                : `✅ Facility details saved for ${selectedFacility}!`;
+            showToast(message);
+        }
+
+        function updateOverallStats() {
+            let totalSteps = 0;
+            let totalAMRs = 0;
+
+            if (currentDFA.amr && currentDFA.amr.steps) {
+                totalSteps = currentDFA.amr.steps.length;
+                totalAMRs = currentDFA.amr.steps.reduce((sum, step) => {
+                    return sum + getStepCategoryGroups(step).reduce((n, g) => n + g.amrIds.length, 0);
+                }, 0);
+            }
+
+            // Count unique AMR entries (not individual facility entries)
+            const uniqueAMRs = new Set();
+            analysisData.forEach(item => {
+                if (item.applicable === 'Yes') {
+                    uniqueAMRs.add(`${item.stepNumber}_${item.amrId}`);
+                }
+            });
+            const applicableCount = uniqueAMRs.size;
+
+            const completedCount = analysisData.filter(item => 
+                item.applicable === 'Yes' && item.facility && item.status
+            ).length;
+
+            const failEntries = analysisData.filter(item => item.status === 'Fail').length;
+            document.getElementById('totalSteps').textContent = totalSteps;
+            document.getElementById('totalAMRs').textContent = totalAMRs;
+            document.getElementById('applicableCount').textContent = applicableCount;
+            document.getElementById('completedCount').textContent = failEntries;
+        }
+
+        function saveAnalysis() {
+            currentDFA.facilityAnalysis = analysisData;
+            currentDFA.metadata.lastUpdated = new Date().toISOString();
+            currentDFA.metadata.currentStep = 5;
+            if (!currentDFA.metadata.completedSteps.includes(4)) {
+                currentDFA.metadata.completedSteps.push(4);
+            }
+
+            localStorage.setItem('currentDFA', JSON.stringify(currentDFA));
+            
+            const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            allDFAs[currentDFA.dfaId] = currentDFA;
+            localStorage.setItem('allDFAData', JSON.stringify(allDFAs));
+
+            showToast('✅ Facility analysis saved successfully!');
+        }
+
+        function exportToExcel() {
+            if (analysisData.length === 0) {
+                showToast('⚠️ No data to export!', true);
+                return;
+            }
+
+            saveAnalysis();
+
+            let csv = 'Step,AMR ID,AMR Requirement,Facility Impact,Facility,Status,Tool,Impact,Machine CTQ,Cost Impact,Alignment F and T\n';
+            
+            analysisData.forEach((item) => {
+                const requirement = getAMRRequirementText(item.amrId);
+                csv += `"Step ${item.stepNumber}","${item.amrId}","${requirement}","${item.applicable}","${item.facility || ''}","${item.status || ''}","${item.tool || ''}","${(item.impact || '').replace(/"/g, '""')}","${(item.machineCTQ || '').replace(/"/g, '""')}","${(item.costImpact || '').replace(/"/g, '""')}","${item.alignmentFT || ''}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `AMR_Facility_Analysis_${currentDFA.dfaId}_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+
+            showToast('✅ Excel file downloaded successfully!');
+        }
+
+        function proceedToReport() {
+            saveAnalysis();
+            currentDFA.metadata.status = 'completed';
+            localStorage.setItem('currentDFA', JSON.stringify(currentDFA));
+            
+            const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            allDFAs[currentDFA.dfaId] = currentDFA;
+            localStorage.setItem('allDFAData', JSON.stringify(allDFAs));
+            
+            window.location.href = 'report.html';
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (isError ? ' error' : '');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveAnalysis();
+            }
+            if (e.key === 'Escape') {
+                closeFacilityModal();
+            }
+        });
+    </script>
+</body>
+</html>

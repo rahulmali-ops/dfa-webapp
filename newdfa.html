@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+
+    <title>DFA WebApp - NEW DFA</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(145deg, #0B4F4A 0%, #1A9B8E 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(145deg, #0B4F4A 0%, #1A9B8E 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: white;
+            color: #147A72;
+        }
+
+        .dfa-id-badge {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        .header .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-container {
+            background: #f5f5f5;
+            padding: 20px 40px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .progress-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active .progress-circle {
+            background: #147A72;
+            border-color: #147A72;
+            color: white;
+        }
+
+        .progress-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .progress-step.active .progress-label {
+            color: #147A72;
+            font-weight: 600;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .info-banner {
+            background: #E6F5F3;
+            border-left: 4px solid #147A72;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .info-banner p {
+            margin: 0;
+            color: #0B4F4A;
+            font-size: 0.95rem;
+        }
+
+        .info-banner strong {
+            color: #083B37;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            animation: fadeIn 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        .form-group:nth-child(4) { animation-delay: 0.4s; }
+        .form-group:nth-child(5) { animation-delay: 0.5s; }
+        .form-group:nth-child(6) { animation-delay: 0.6s; }
+        .form-group:nth-child(7) { animation-delay: 0.7s; }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .required {
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #147A72;
+            box-shadow: 0 0 0 3px rgba(20, 122, 114, 0.1);
+        }
+
+        .helper-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #147A72;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0B4F4A;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(20, 122, 114, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f1f1;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .milestone-display {
+            background: linear-gradient(145deg, #0B4F4A 0%, #1A9B8E 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .milestone-display h3 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .milestone-display p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error {
+            border-color: #e74c3c !important;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .platform-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .platform-select {
+            flex: 1;
+        }
+
+        .add-platform-btn {
+            padding: 12px 20px;
+            background: #147A72;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .add-platform-btn:hover {
+            background: #0B4F4A;
+        }
+
+        .version-display {
+            background: #E6F5F3;
+            border: 2px solid #147A72;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0B4F4A;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .version-badge {
+            background: #147A72;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .back-button {
+                position: static;
+                transform: none;
+                display: block;
+                margin-bottom: 15px;
+                width: fit-content;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .left-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .platform-input-group {
+                flex-direction: column;
+            }
+        }
+
+        .btn.loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .left-buttons {
+            display: flex;
+            gap: 15px;
+        }
+    
+
+        /* Shared form / wizard polish */
+        .container, .header-card, .progress-card, .form-card, .content-card,
+        .filters-section, .controls-section, .table-container, .header {
+            box-shadow: 0 8px 24px rgba(21,32,43,0.07) !important;
+            border: 1px solid #D3DBE3;
+        }
+        .header, .header-card { animation: dfa-nav-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .form-container, .form-card, .content-card, .progress-card,
+        .filters-section, .controls-section, .table-container, .stats-container {
+            animation: dfa-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+        }
+        .header h1, .header-text h1, .header-left h1 {
+            font-family: 'Space Grotesk', sans-serif !important; letter-spacing: -0.02em;
+        }
+        .btn, .btn-primary, .btn-header, .add-platform-btn, .load-selected-btn,
+        .filter-toggle-btn, .nav-btn, .action-btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+        }
+        .btn:hover:not(:disabled), .btn-primary:hover, .nav-btn:hover { transform: translateY(-1px); }
+        input:focus, select:focus, textarea:focus, .filter-input:focus, .filter-select:focus,
+        .search-input:focus, .search-box input:focus {
+            border-color: #147A72 !important; box-shadow: 0 0 0 3px rgba(20,122,114,0.12) !important;
+        }
+        .spinner { border-top-color: #147A72 !important; }
+        .progress-step.active .progress-circle,
+        .progress-step.active .step-circle,
+        .step-circle.active {
+            background: #147A72 !important; border-color: #147A72 !important; color: white !important;
+        }
+        .progress-step.active .progress-label,
+        .progress-step.active .step-label { color: #0B4F4A !important; }
+
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-button">← Back</a>
+            <div class="dfa-id-badge" id="dfaIdBadge">Loading...</div>
+            <div class="icon">✨</div>
+            <h1>NEW DFA Application</h1>
+            <p>Design Failure Analysis Form - Step 1 (POC Only)</p>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-step active">
+                    <div class="progress-circle">1</div>
+                    <span class="progress-label">NEW DFA</span>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle">2</div>
+                    <span class="progress-label">PFD</span>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle">3</div>
+                    <span class="progress-label">AMR</span>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle">4</div>
+                    <span class="progress-label">Report</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="info-banner">
+                <p>ℹ️ <strong>NEW DFA:</strong> This is for first-time DFA with POC (Proof of Concept) milestone only. Version starts at v1.0.</p>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                ✓ Data saved successfully! Proceeding to PFD...
+            </div>
+
+            <form id="newdfaForm">
+                <!-- Milestone Display (Fixed to POC) -->
+                <div class="milestone-display">
+                    <h3>📌 Build Milestone: POC</h3>
+                    <p>Proof of Concept - Fixed for NEW DFA</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="platform">1. Platform Selection <span class="required">*</span></label>
+                    <div class="platform-input-group">
+                        <select class="platform-select" id="platform" name="platform" required>
+                            <option value="">-- Select Platform --</option>
+                        </select>
+                        <button type="button" class="add-platform-btn" onclick="addNewPlatform()">
+                            ➕ Add New
+                        </button>
+                    </div>
+                    <div class="platform-add-panel" id="platformAddPanel">
+                        <input type="text" id="newPlatformInput" placeholder="Enter new platform name" autocomplete="off">
+                        <button type="button" class="platform-add-confirm" onclick="confirmAddPlatform()">Add</button>
+                        <button type="button" class="platform-add-cancel" onclick="cancelAddPlatform()">Cancel</button>
+                    </div>
+                    <span class="helper-text">Select existing platform or add new one</span>
+                    <span class="error-message" id="platformError">Please select platform</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="swimlanes">2. Swimlanes <span class="required">*</span></label>
+                    <textarea 
+                        id="swimlanes" 
+                        name="swimlanes" 
+                        placeholder="Enter swimlanes information..."
+                        required
+                    ></textarea>
+                    <span class="helper-text">Describe the swimlanes for this DFA</span>
+                    <span class="error-message" id="swimlanesError">Please enter swimlanes</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="dfaOwner">3. DFA Owner / Assigned Person <span class="required">*</span></label>
+                    <input 
+                        type="text" 
+                        id="dfaOwner" 
+                        name="dfaOwner" 
+                        placeholder="Enter name of DFA owner"
+                        required
+                    >
+                    <span class="error-message" id="ownerError">Please enter DFA owner name</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="tcNumber">4. TC Number (Part Number) <span class="required">*</span></label>
+                    <input 
+                        type="text" 
+                        id="tcNumber" 
+                        name="tcNumber" 
+                        placeholder="e.g., TC-12345"
+                        required
+                    >
+                    <span class="helper-text">Enter the technical component number</span>
+                    <span class="error-message" id="tcNumberError">Please enter TC number</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="tcDescription">5. TC Part Description (Part Name) <span class="required">*</span></label>
+                    <input 
+                        type="text" 
+                        id="tcDescription" 
+                        name="tcDescription" 
+                        placeholder="Enter part description"
+                        required
+                    >
+                    <span class="error-message" id="descriptionError">Please enter part description</span>
+                </div>
+
+                <div class="form-group">
+                    <label>6. Version Number (Auto-set for NEW DFA)</label>
+                    <div class="version-display">
+                        <span>📌 Initial Version:</span>
+                        <span class="version-badge">v1.0</span>
+                    </div>
+                    <input type="hidden" id="versionNumber" name="versionNumber" value="v1.0">
+                    <span class="helper-text">NEW DFA always starts with version v1.0</span>
+                </div>
+
+                <div class="button-group">
+                    <div class="left-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="saveDraft()">
+                            💾 Save Draft
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                            🔄 Reset
+                        </button>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        Next to PFD →
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentDFA = null;
+        let platforms = [];
+
+        window.addEventListener('load', function() {
+            loadCurrentDFA();
+            loadPlatforms();
+            loadSavedData();
+        });
+
+        function loadCurrentDFA() {
+            const dfaData = localStorage.getItem('currentDFA');
+            if (dfaData) {
+                currentDFA = JSON.parse(dfaData);
+                document.getElementById('dfaIdBadge').textContent = `DFA ID: ${currentDFA.dfaId}`;
+            } else {
+                alert('No active DFA session found. Redirecting to home...');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function loadPlatforms() {
+            const savedPlatforms = localStorage.getItem('platforms');
+            if (savedPlatforms) {
+                platforms = JSON.parse(savedPlatforms);
+            } else {
+                // Default platforms
+                platforms = ['Platform A', 'Platform B', 'EV Platform', 'Hybrid Platform'];
+                localStorage.setItem('platforms', JSON.stringify(platforms));
+            }
+            updatePlatformDropdown();
+        }
+
+        function updatePlatformDropdown() {
+            const select = document.getElementById('platform');
+            const currentValue = select.value;
+            
+            select.innerHTML = '<option value="">-- Select Platform --</option>';
+            platforms.forEach(platform => {
+                const option = document.createElement('option');
+                option.value = platform;
+                option.textContent = platform;
+                select.appendChild(option);
+            });
+            
+            if (currentValue && platforms.includes(currentValue)) {
+                select.value = currentValue;
+            }
+        }
+
+        function addNewPlatform() {
+            const panel = document.getElementById('platformAddPanel');
+            const input = document.getElementById('newPlatformInput');
+            if (!panel || !input) {
+                // Fallback if panel missing
+                const name = window.prompt('Enter new platform name:');
+                if (name && name.trim()) saveNewPlatform(name.trim());
+                return;
+            }
+            panel.classList.add('active');
+            input.value = '';
+            input.focus();
+        }
+
+        function cancelAddPlatform() {
+            const panel = document.getElementById('platformAddPanel');
+            const input = document.getElementById('newPlatformInput');
+            if (panel) panel.classList.remove('active');
+            if (input) input.value = '';
+        }
+
+        function confirmAddPlatform() {
+            const input = document.getElementById('newPlatformInput');
+            const name = (input && input.value ? input.value : '').trim();
+            if (!name) {
+                showToast('⚠️ Please enter a platform name', true);
+                if (input) input.focus();
+                return;
+            }
+            saveNewPlatform(name);
+        }
+
+        function saveNewPlatform(trimmedPlatform) {
+            const exists = platforms.some(p => p.toLowerCase() === trimmedPlatform.toLowerCase());
+            if (exists) {
+                showToast('⚠️ Platform already exists!', true);
+                return;
+            }
+            platforms.push(trimmedPlatform);
+            localStorage.setItem('platforms', JSON.stringify(platforms));
+            updatePlatformDropdown();
+            const select = document.getElementById('platform');
+            if (select) select.value = trimmedPlatform;
+            cancelAddPlatform();
+            showToast(`✅ Platform "${trimmedPlatform}" added successfully!`);
+        }
+
+        // Enter / Escape on the inline add field (script is at end of body)
+        (function bindPlatformAddKeys() {
+            const input = document.getElementById('newPlatformInput');
+            if (!input) return;
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmAddPlatform();
+                } else if (e.key === 'Escape') {
+                    cancelAddPlatform();
+                }
+            });
+        })();
+
+        function loadSavedData() {
+            if (currentDFA && currentDFA.revup) {
+                const revupData = currentDFA.revup;
+                
+                const fields = ['platform', 'swimlanes', 'dfaOwner', 'tcNumber', 'tcDescription'];
+                fields.forEach(field => {
+                    if (revupData[field]) {
+                        const element = document.getElementById(field);
+                        if (element) element.value = revupData[field];
+                    }
+                });
+            }
+        }
+
+        const form = document.getElementById('newdfaForm');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            clearErrors();
+            
+            if (validateForm()) {
+                const formData = new FormData(form);
+                const newdfaData = Object.fromEntries(formData);
+                
+                // Force milestone to POC and version to v1.0
+                newdfaData.milestone = 'POC';
+                newdfaData.versionNumber = 'v1.0';
+                newdfaData.completedAt = new Date().toISOString();
+                
+                const submitBtn = form.querySelector('.btn-primary');
+                submitBtn.classList.add('loading');
+                submitBtn.innerHTML = 'Saving...';
+                
+                setTimeout(() => {
+                    saveToStorage(newdfaData);
+                    
+                    document.getElementById('successMessage').classList.add('show');
+                    submitBtn.classList.remove('loading');
+                    submitBtn.innerHTML = 'Next to PFD →';
+                    
+                    setTimeout(() => {
+                        window.location.href = 'pfd.html';
+                    }, 1000);
+                }, 500);
+            }
+        });
+
+        function saveToStorage(newdfaData) {
+            currentDFA.revup = newdfaData;
+            currentDFA.metadata.lastUpdated = new Date().toISOString();
+            currentDFA.metadata.currentStep = 2;
+            if (!currentDFA.metadata.completedSteps.includes(1)) {
+                currentDFA.metadata.completedSteps.push(1);
+            }
+            
+            localStorage.setItem('currentDFA', JSON.stringify(currentDFA));
+            
+            const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            allDFAs[currentDFA.dfaId] = currentDFA;
+            localStorage.setItem('allDFAData', JSON.stringify(allDFAs));
+            
+            console.log('NEW DFA saved:', currentDFA.dfaId);
+        }
+
+        function saveDraft() {
+            const formData = new FormData(form);
+            const newdfaData = Object.fromEntries(formData);
+            newdfaData.milestone = 'POC';
+            newdfaData.versionNumber = 'v1.0';
+            
+            currentDFA.revup = newdfaData;
+            currentDFA.metadata.lastUpdated = new Date().toISOString();
+            localStorage.setItem('currentDFA', JSON.stringify(currentDFA));
+            
+            const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            allDFAs[currentDFA.dfaId] = currentDFA;
+            localStorage.setItem('allDFAData', JSON.stringify(allDFAs));
+            
+            showToast('✓ Draft saved successfully!');
+        }
+
+        function validateForm() {
+            let isValid = true;
+            
+            const requiredFields = [
+                { id: 'platform', errorId: 'platformError' },
+                { id: 'swimlanes', errorId: 'swimlanesError' },
+                { id: 'dfaOwner', errorId: 'ownerError' },
+                { id: 'tcNumber', errorId: 'tcNumberError' },
+                { id: 'tcDescription', errorId: 'descriptionError' }
+            ];
+            
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (!input.value.trim()) {
+                    showError(field.errorId, input);
+                    isValid = false;
+                }
+            });
+            
+            return isValid;
+        }
+
+        function showError(errorId, inputElement) {
+            const errorMsg = document.getElementById(errorId);
+            errorMsg.classList.add('show');
+            if (inputElement) {
+                inputElement.classList.add('error');
+            }
+        }
+
+        function clearErrors() {
+            const errorMessages = document.querySelectorAll('.error-message');
+            errorMessages.forEach(msg => msg.classList.remove('show'));
+            
+            const errorInputs = document.querySelectorAll('.error');
+            errorInputs.forEach(input => input.classList.remove('error'));
+        }
+
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the form? This will clear all unsaved data.')) {
+                form.reset();
+                clearErrors();
+                document.getElementById('successMessage').classList.remove('show');
+            }
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${isError ? '#e74c3c' : '#147A72'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                z-index: 10000;
+                animation: slideInRight 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.classList.contains('error')) {
+                    this.classList.remove('error');
+                    const errorId = this.id + 'Error';
+                    const errorMsg = document.getElementById(errorId);
+                    if (errorMsg) {
+                        errorMsg.classList.remove('show');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

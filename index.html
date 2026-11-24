@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+
+    <title>DFA WebApp - Selection</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(145deg, #083B37 0%, #147A72 55%, #1A9B8E 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .nav-brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #147A72;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: #147A72;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: #0F6660;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(20, 122, 114, 0.3);
+        }
+
+        .nav-btn.secondary {
+            background: #f1f1f1;
+            color: #333;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .search-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #147A72;
+            box-shadow: 0 0 0 3px rgba(20, 122, 114, 0.1);
+        }
+
+        .search-btn {
+            padding: 12px 25px;
+            background: #147A72;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background: #0F6660;
+            transform: translateY(-2px);
+        }
+
+        .search-result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .search-result.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .search-result.error {
+            background: #fee;
+            color: #c33;
+        }
+
+        .search-result.success {
+            background: #efe;
+            color: #363;
+        }
+
+        .divider {
+            text-align: center;
+            color: white;
+            margin: 30px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .selection-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .selection-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 0.8s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .selection-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .selection-card:hover::before {
+            left: 100%;
+        }
+
+        .selection-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .selection-card:active {
+            transform: translateY(-5px) scale(0.98);
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        .selection-card:nth-child(1) .icon {
+            animation-delay: 0s;
+        }
+
+        .selection-card:nth-child(2) .icon {
+            animation-delay: 0.2s;
+        }
+
+        .selection-card h2 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .selection-card p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .revup-card {
+            border-top: 5px solid #1B7A4E;
+        }
+
+        .newdfa-card {
+            border-top: 5px solid #147A72;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #147A72;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .keyboard-hint {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .selection-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .selection-card {
+                padding: 30px 20px;
+            }
+
+            .icon {
+                font-size: 3rem;
+            }
+
+            .selection-card h2 {
+                font-size: 1.5rem;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .top-nav {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+            }
+
+            .nav-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Stats Badge */
+        .stats-badge {
+            background: #ff9800;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+    
+
+        /* Index — brand-first selection hub */
+        body { padding: 24px 20px 40px !important; display: block !important; }
+        .container { max-width: 880px; margin: 0 auto; padding-top: 12px; }
+        .top-nav {
+            background: rgba(255,255,255,0.92) !important; backdrop-filter: blur(10px);
+            border: 1px solid #D3DBE3; border-radius: 14px !important;
+            box-shadow: 0 8px 24px rgba(21,32,43,0.06) !important;
+            animation: dfa-nav-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif !important; font-size: 1.15rem !important;
+            color: #0B4F4A !important; letter-spacing: -0.02em;
+        }
+        .nav-btn { background: #147A72 !important; border-radius: 10px !important; font-family: 'DM Sans', sans-serif; }
+        .nav-btn:hover { background: #0F6660 !important; box-shadow: 0 6px 16px rgba(20,122,114,0.25) !important; }
+        .nav-btn.secondary { background: #EEF2F4 !important; color: #15202B !important; }
+        .nav-btn.secondary:hover { background: #D3DBE3 !important; }
+        .stats-badge { background: #C45C26 !important; border-radius: 8px !important; }
+        .header {
+            color: #15202B !important; text-align: left !important; margin: 36px 0 28px !important;
+            animation: dfa-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+        }
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-size: clamp(2.4rem, 6vw, 3.4rem) !important; color: #0B4F4A !important;
+            text-shadow: none !important; letter-spacing: -0.04em; line-height: 1.05; margin-bottom: 12px !important;
+        }
+        .subtitle { font-size: 1.1rem !important; color: #5C6B7A !important; opacity: 1 !important; max-width: 36ch; }
+        .search-section {
+            border-radius: 14px !important; border: 1px solid #D3DBE3;
+            box-shadow: 0 8px 24px rgba(21,32,43,0.06) !important;
+            animation: dfa-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+        }
+        .search-title { font-family: 'Space Grotesk', sans-serif; color: #15202B !important; }
+        .search-input:focus { border-color: #147A72 !important; box-shadow: 0 0 0 3px rgba(20,122,114,0.12) !important; }
+        .search-btn { background: #147A72 !important; border-radius: 10px !important; }
+        .search-btn:hover { background: #0F6660 !important; }
+        .divider {
+            color: #5C6B7A !important; font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem !important; letter-spacing: 0.08em; text-transform: uppercase;
+            margin: 28px 0 !important; animation: dfa-fade 0.6s ease 0.2s both;
+        }
+        .selection-container { padding: 0 !important; gap: 18px !important; animation: dfa-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both; }
+        .selection-card {
+            border-radius: 14px !important; box-shadow: 0 8px 24px rgba(21,32,43,0.06) !important;
+            border: 1px solid #D3DBE3; padding: 36px 28px !important; text-align: left !important;
+        }
+        .selection-card::before { display: none; }
+        .selection-card:hover {
+            transform: translateY(-4px) !important; border-color: #147A72;
+            box-shadow: 0 14px 32px rgba(21,32,43,0.1) !important;
+        }
+        .revup-card { border-top: 4px solid #1B7A4E !important; }
+        .newdfa-card { border-top: 4px solid #147A72 !important; }
+        .selection-card h2 { font-family: 'Space Grotesk', sans-serif !important; color: #15202B !important; font-size: 1.65rem !important; }
+        .selection-card p { color: #5C6B7A !important; }
+        .icon { animation: none !important; font-size: 2.4rem !important; margin-bottom: 14px !important; }
+        .keyboard-hint { color: #5C6B7A !important; opacity: 1 !important; margin-top: 24px !important; animation: dfa-fade 0.6s ease 0.35s both; }
+        .spinner { border-top-color: #147A72 !important; }
+        @media (max-width: 768px) {
+            .header { text-align: center !important; }
+            .header h1 { font-size: 2.2rem !important; }
+            .subtitle { margin: 0 auto; }
+        }
+
+</style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Navigation -->
+        <div class="top-nav">
+            <div class="nav-brand">
+                DFA WebApp
+            </div>
+            <div class="nav-buttons">
+                <a href="all-dfas.html" class="nav-btn">
+                    📋 All DFAs
+                    <span class="stats-badge" id="dfaCountBadge">0</span>
+                </a>
+                <button class="nav-btn secondary" onclick="clearData()">
+                    🗑️ Clear Data
+                </button>
+            </div>
+        </div>
+
+        <div class="header">
+            <h1>DFA WebApp</h1>
+            <p class="subtitle">Design Failure Analysis System</p>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-title">
+                🔍 Search Existing DFA
+            </div>
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput" 
+                    placeholder="Enter DFA ID (e.g., DFA-2024-001)"
+                >
+                <button class="search-btn" onclick="searchDFA()">Search</button>
+            </div>
+            <div class="search-result" id="searchResult"></div>
+        </div>
+
+        <div class="divider">OR CREATE NEW DFA</div>
+        
+        <div class="selection-container">
+            <div class="selection-card revup-card" onclick="navigateTo('revup')">
+                <div class="icon">🚀</div>
+                <h2>REVUP</h2>
+                <p>Select this option for REVUP applications with all milestones</p>
+            </div>
+            
+            <div class="selection-card newdfa-card" onclick="navigateTo('newdfa')">
+                <div class="icon">✨</div>
+                <h2>NEW DFA</h2>
+                <p>Select this option for new DFA with POC milestone only</p>
+            </div>
+        </div>
+
+        <div class="keyboard-hint">
+            💡 Tip: Press '1' for REVUP or '2' for NEW DFA
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Initializing...</div>
+    </div>
+
+    <script>
+        // Generate unique DFA ID
+        function generateDFAId() {
+            const year = new Date().getFullYear();
+            const timestamp = Date.now();
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `DFA-${year}-${random}-${timestamp.toString().slice(-6)}`;
+        }
+
+        // Initialize DFA data structure
+        function initializeDFAData() {
+            if (!localStorage.getItem('dfaList')) {
+                localStorage.setItem('dfaList', JSON.stringify([]));
+            }
+            updateDFACount();
+        }
+
+        // Update DFA count badge
+        function updateDFACount() {
+            const allDFAData = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            const count = Object.keys(allDFAData).length;
+            document.getElementById('dfaCountBadge').textContent = count;
+        }
+
+        // Create new DFA
+        function createNewDFA(applicationType) {
+            const dfaId = generateDFAId();
+            const dfaData = {
+                dfaId: dfaId,
+                metadata: {
+                    createdAt: new Date().toISOString(),
+                    lastUpdated: new Date().toISOString(),
+                    currentStep: 0,
+                    completedSteps: [],
+                    applicationType: applicationType,
+                    status: 'in-progress'
+                },
+                selection: {
+                    type: applicationType,
+                    selectedAt: new Date().toISOString()
+                },
+                revup: {},
+                pfd: {},
+                amr: {},
+                facilityAnalysis: [],
+                report: {}
+            };
+
+            localStorage.setItem('currentDFA', JSON.stringify(dfaData));
+
+            const dfaList = JSON.parse(localStorage.getItem('dfaList') || '[]');
+            dfaList.push({
+                dfaId: dfaId,
+                applicationType: applicationType,
+                createdAt: dfaData.metadata.createdAt,
+                status: 'in-progress'
+            });
+            localStorage.setItem('dfaList', JSON.stringify(dfaList));
+
+            console.log('New DFA created:', dfaId);
+            return dfaId;
+        }
+
+        // Search DFA
+        function searchDFA() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResult = document.getElementById('searchResult');
+            const dfaId = searchInput.value.trim();
+
+            if (!dfaId) {
+                searchResult.className = 'search-result error show';
+                searchResult.textContent = '⚠️ Please enter a DFA ID';
+                return;
+            }
+
+            const dfaList = JSON.parse(localStorage.getItem('dfaList') || '[]');
+            const found = dfaList.find(dfa => dfa.dfaId === dfaId);
+
+            if (found) {
+                const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+                const dfaData = allDFAs[dfaId];
+
+                if (dfaData) {
+                    localStorage.setItem('currentDFA', JSON.stringify(dfaData));
+                    searchResult.className = 'search-result success show';
+                    searchResult.innerHTML = `
+                        ✓ DFA Found: ${dfaId}<br>
+                        Type: ${found.applicationType}<br>
+                        Status: ${found.status}<br>
+                        <button class="search-btn" style="margin-top: 10px;" onclick="loadDFA('${dfaId}')">Load DFA</button>
+                    `;
+                } else {
+                    searchResult.className = 'search-result error show';
+                    searchResult.textContent = '⚠️ DFA data corrupted or missing';
+                }
+            } else {
+                searchResult.className = 'search-result error show';
+                searchResult.textContent = '❌ DFA ID not found';
+            }
+        }
+
+        function loadDFA(dfaId) {
+            const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            const dfaData = allDFAs[dfaId];
+            
+            if (dfaData) {
+                localStorage.setItem('currentDFA', JSON.stringify(dfaData));
+                window.location.href = 'report.html';
+            }
+        }
+
+        window.addEventListener('load', function() {
+            initializeDFAData();
+        });
+
+        function navigateTo(selection) {
+            const card = event.currentTarget;
+            card.style.transform = 'scale(0.95)';
+            
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('active');
+            
+            const dfaId = createNewDFA(selection);
+            
+            setTimeout(() => {
+                if (selection === 'revup') {
+                    window.location.href = 'revup.html';
+                } else if (selection === 'newdfa') {
+                    window.location.href = 'newdfa.html';
+                }
+            }, 800);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '1') {
+                document.querySelector('.revup-card').click();
+            } else if (e.key === '2') {
+                document.querySelector('.newdfa-card').click();
+            } else if (e.key === 'Enter' && document.activeElement.id === 'searchInput') {
+                searchDFA();
+            }
+        });
+
+        function clearData() {
+            const count = Object.keys(JSON.parse(localStorage.getItem('allDFAData') || '{}')).length;
+            
+            if (count === 0) {
+                alert('No data to clear');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to clear all ${count} DFA(s)? This action cannot be undone.`)) {
+                localStorage.removeItem('allDFAData');
+                localStorage.removeItem('dfaList');
+                localStorage.removeItem('currentDFA');
+                initializeDFAData();
+                alert('✓ All data cleared successfully!');
+                updateDFACount();
+            }
+        }
+    </script>
+</body>
+</html>

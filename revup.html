@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+
+    <title>DFA WebApp - REVUP</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(145deg, #083B37 0%, #147A72 55%, #1A9B8E 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(145deg, #1B7A4E 0%, #2D9B6A 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: white;
+            color: #1B7A4E;
+        }
+
+        .dfa-id-badge {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        .header .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-container {
+            background: #f5f5f5;
+            padding: 20px 40px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .progress-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active .progress-circle {
+            background: #1B7A4E;
+            border-color: #1B7A4E;
+            color: white;
+        }
+
+        .progress-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .progress-step.active .progress-label {
+            color: #1B7A4E;
+            font-weight: 600;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        /* DFA Selection Section */
+        .selection-section {
+            background: linear-gradient(145deg, #E6F5F3 0%, #D4EFEB 100%);
+            border: 3px solid #1B7A4E;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .selection-section h2 {
+            color: #145A3A;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .selection-section > p {
+            color: #1B7A4E;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .search-filter-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .nested-filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .nested-filter-group {
+            flex: 1 1 160px;
+            min-width: 140px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nested-filter-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #5C6B7A;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #1B7A4E;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #145A3A;
+            box-shadow: 0 0 0 3px rgba(27, 122, 78, 0.1);
+        }
+
+        .filter-select {
+            padding: 12px 15px;
+            border: 2px solid #1B7A4E;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .filter-select:disabled {
+            background: #EEF2F4;
+            color: #8A97A5;
+            cursor: not-allowed;
+        }
+
+        .dfa-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .dfa-list-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .dfa-list-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .dfa-list-container::-webkit-scrollbar-thumb {
+            background: #1B7A4E;
+            border-radius: 10px;
+        }
+
+        .dfa-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .dfa-card:hover {
+            border-color: #1B7A4E;
+            background: #E6F5ED;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(27, 122, 78, 0.2);
+        }
+
+        .dfa-card.selected {
+            border-color: #1B7A4E;
+            background: #E6F5ED;
+            border-width: 3px;
+        }
+
+        .dfa-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .dfa-id {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #145A3A;
+            font-family: 'DM Sans', ui-monospace, monospace;
+        }
+
+        .dfa-type-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-revup {
+            background: #1B7A4E;
+            color: white;
+        }
+
+        .badge-newdfa {
+            background: #147A72;
+            color: white;
+        }
+
+        .dfa-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .dfa-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dfa-info-label {
+            font-size: 0.75rem;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+            letter-spacing: 0.5px;
+        }
+
+        .dfa-info-value {
+            font-size: 0.95rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .milestone-badge {
+            display: inline-block;
+            background: #1B7A4E;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .select-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #1B7A4E;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+
+        .dfa-card.selected .select-indicator {
+            display: flex;
+        }
+
+        .select-indicator::after {
+            content: '✓';
+            color: #1B7A4E;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        .load-selected-btn {
+            width: 100%;
+            padding: 15px;
+            background: #1B7A4E;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .load-selected-btn:hover:not(:disabled) {
+            background: #166B44;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(27, 122, 78, 0.3);
+        }
+
+        .load-selected-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Form Section */
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .upgrade-info-banner {
+            background: linear-gradient(145deg, #E8F2F8 0%, #D6E8F2 100%);
+            border-left: 4px solid #0c5460;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .upgrade-info-banner h3 {
+            color: #0c5460;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .upgrade-info-banner p {
+            margin: 5px 0;
+            color: #0c5460;
+            font-size: 0.95rem;
+        }
+
+        .current-milestone-display {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #e0e0e0;
+            color: #999;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            animation: fadeIn 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        .form-group:nth-child(4) { animation-delay: 0.4s; }
+        .form-group:nth-child(5) { animation-delay: 0.5s; }
+        .form-group:nth-child(6) { animation-delay: 0.6s; }
+        .form-group:nth-child(7) { animation-delay: 0.7s; }
+        .form-group:nth-child(8) { animation-delay: 0.8s; }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .required {
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1B7A4E;
+            box-shadow: 0 0 0 3px rgba(27, 122, 78, 0.1);
+        }
+
+        .form-group input:disabled {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .helper-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .platform-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .platform-select {
+            flex: 1;
+        }
+
+        .add-platform-btn {
+            padding: 12px 20px;
+            background: #1B7A4E;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .add-platform-btn:hover {
+            background: #166B44;
+        }
+
+        .version-display {
+            background: #E6F5ED;
+            border: 2px solid #1B7A4E;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #145A3A;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .version-badge {
+            background: #1B7A4E;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #1B7A4E;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #166B44;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(27, 122, 78, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f1f1;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .milestone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .milestone-option {
+            position: relative;
+        }
+
+        .milestone-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .milestone-label {
+            display: block;
+            padding: 12px 10px;
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .milestone-option input[type="radio"]:checked + .milestone-label {
+            background: #1B7A4E;
+            color: white;
+            border-color: #1B7A4E;
+            transform: scale(1.05);
+        }
+
+        .milestone-label:hover:not(.disabled) {
+            border-color: #1B7A4E;
+            background: #E6F5ED;
+        }
+
+        .milestone-label.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #e0e0e0;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error {
+            border-color: #e74c3c !important;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .back-button {
+                position: static;
+                transform: none;
+                display: block;
+                margin-bottom: 15px;
+                width: fit-content;
+            }
+
+            .milestone-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .left-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .dfa-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-filter-container {
+                flex-direction: column;
+            }
+
+            .platform-input-group {
+                flex-direction: column;
+            }
+        }
+
+        .btn.loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .left-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stats-summary {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1B7A4E;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+    
+
+        /* Shared form / wizard polish */
+        .container, .header-card, .progress-card, .form-card, .content-card,
+        .filters-section, .controls-section, .table-container, .header {
+            box-shadow: 0 8px 24px rgba(21,32,43,0.07) !important;
+            border: 1px solid #D3DBE3;
+        }
+        .header, .header-card { animation: dfa-nav-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .form-container, .form-card, .content-card, .progress-card,
+        .filters-section, .controls-section, .table-container, .stats-container {
+            animation: dfa-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+        }
+        .header h1, .header-text h1, .header-left h1 {
+            font-family: 'Space Grotesk', sans-serif !important; letter-spacing: -0.02em;
+        }
+        .btn, .btn-primary, .btn-header, .add-platform-btn, .load-selected-btn,
+        .filter-toggle-btn, .nav-btn, .action-btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+        }
+        .btn:hover:not(:disabled), .btn-primary:hover, .nav-btn:hover { transform: translateY(-1px); }
+        input:focus, select:focus, textarea:focus, .filter-input:focus, .filter-select:focus,
+        .search-input:focus, .search-box input:focus {
+            border-color: #147A72 !important; box-shadow: 0 0 0 3px rgba(20,122,114,0.12) !important;
+        }
+        .spinner { border-top-color: #147A72 !important; }
+        .progress-step.active .progress-circle,
+        .progress-step.active .step-circle,
+        .step-circle.active {
+            background: #147A72 !important; border-color: #147A72 !important; color: white !important;
+        }
+        .progress-step.active .progress-label,
+        .progress-step.active .step-label { color: #0B4F4A !important; }
+
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-button">← Back</a>
+            <div class="dfa-id-badge" id="dfaIdBadge">New REVUP Session</div>
+            <div class="icon">🚀</div>
+            <h1>REVUP Application</h1>
+            <p>Design Failure Analysis - Milestone Upgrade</p>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-step active">
+                    <div class="progress-circle">1</div>
+                    <span class="progress-label">REVUP</span>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle">2</div>
+                    <span class="progress-label">PFD</span>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle">3</div>
+                    <span class="progress-label">AMR</span>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle">4</div>
+                    <span class="progress-label">Report</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <!-- DFA Selection Section -->
+            <div class="selection-section" id="selectionSection">
+                <h2>📋 Select Existing DFA to Upgrade</h2>
+                <p>Choose a DFA from the list below to upgrade its milestone</p>
+
+                <!-- Stats Summary -->
+                <div class="stats-summary">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalDfaCount">0</div>
+                        <div class="stat-label">Total DFAs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="newDfaCount">0</div>
+                        <div class="stat-label">NEW DFAs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="revupDfaCount">0</div>
+                        <div class="stat-label">REVUPs</div>
+                    </div>
+                </div>
+
+                <!-- Nested filters: Platform → TC → Milestone -->
+                <div class="search-filter-container">
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        id="searchDfaInput" 
+                        placeholder="🔍 Search by DFA ID, Owner, Part Name..."
+                        oninput="filterDfaList()"
+                    >
+                    <div class="nested-filters-row">
+                        <div class="nested-filter-group">
+                            <label for="filterPlatform">1. Platform</label>
+                            <select class="filter-select" id="filterPlatform" onchange="onPlatformFilterChange()">
+                                <option value="">All Platforms</option>
+                            </select>
+                        </div>
+                        <div class="nested-filter-group">
+                            <label for="filterTc">2. TC Number</label>
+                            <select class="filter-select" id="filterTc" onchange="onTcFilterChange()" disabled>
+                                <option value="">All TC Numbers</option>
+                            </select>
+                        </div>
+                        <div class="nested-filter-group">
+                            <label for="filterMilestone">3. Milestone</label>
+                            <select class="filter-select" id="filterMilestone" onchange="filterDfaList()" disabled>
+                                <option value="">All Milestones</option>
+                            </select>
+                        </div>
+                        <div class="nested-filter-group">
+                            <label for="filterType">4. Type</label>
+                            <select class="filter-select" id="filterType" onchange="filterDfaList()">
+                                <option value="all">All DFAs</option>
+                                <option value="newdfa">NEW DFA Only</option>
+                                <option value="revup">REVUP Only</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DFA List -->
+                <div class="dfa-list-container" id="dfaListContainer">
+                    <!-- DFA cards will be rendered here -->
+                </div>
+
+                <button class="load-selected-btn" id="loadSelectedBtn" onclick="loadSelectedDFA()" disabled>
+                    📥 Load Selected DFA & Proceed to Upgrade
+                </button>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                ✓ Data saved successfully! Proceeding to PFD...
+            </div>
+
+            <!-- Form Section (Hidden until DFA is selected) -->
+            <div class="form-section" id="formSection">
+                <!-- Upgrade Info Banner -->
+                <div class="upgrade-info-banner">
+                    <h3>🔄 Upgrading DFA</h3>
+                    <p><strong>DFA ID:</strong> <span id="upgradeDfaId"></span></p>
+                    <p><strong>Platform:</strong> <span id="upgradePlatform"></span></p>
+                    <p><strong>Current Version:</strong> <span id="upgradeCurrentVersion"></span></p>
+                    
+                    <p style="margin-top: 10px;">
+                        <strong>Current Milestone:</strong> 
+                        <span class="current-milestone-display" id="currentMilestoneDisplay">POC</span>
+                    </p>
+                    <p style="margin-top: 5px; font-size: 0.85rem; color: #666;">
+                        ⬇️ Select any milestone below to upgrade
+                    </p>
+                </div>
+
+                <form id="revupForm">
+                    <div class="form-group">
+                        <label>1. Select New Milestone <span class="required">*</span></label>
+                        <div class="milestone-grid" id="milestoneGrid">
+                            <div class="milestone-option">
+                                <input type="radio" id="poc" name="milestone" value="POC" required>
+                                <label for="poc" class="milestone-label">POC</label>
+                            </div>
+                            <div class="milestone-option">
+                                <input type="radio" id="mk1" name="milestone" value="MK1">
+                                <label for="mk1" class="milestone-label">MK1</label>
+                            </div>
+                            <div class="milestone-option">
+                                <input type="radio" id="mk2" name="milestone" value="MK2">
+                                <label for="mk2" class="milestone-label">MK2</label>
+                            </div>
+                            <div class="milestone-option">
+                                <input type="radio" id="mk3" name="milestone" value="MK3">
+                                <label for="mk3" class="milestone-label">MK3</label>
+                            </div>
+                            <div class="milestone-option">
+                                <input type="radio" id="x1" name="milestone" value="X1">
+                                <label for="x1" class="milestone-label">X1</label>
+                            </div>
+                            <div class="milestone-option">
+                                <input type="radio" id="lvpt" name="milestone" value="LVPT">
+                                <label for="lvpt" class="milestone-label">LVPT</label>
+                            </div>
+                            <div class="milestone-option">
+                                <input type="radio" id="hvpt" name="milestone" value="HVPT">
+                                <label for="hvpt" class="milestone-label">HVPT</label>
+                            </div>
+                            <div class="milestone-option">
+                                <input type="radio" id="sop" name="milestone" value="SOP">
+                                <label for="sop" class="milestone-label">SOP</label>
+                            </div>
+                            <div class="milestone-option">
+                                <input type="radio" id="postsop" name="milestone" value="Post SOP">
+                                <label for="postsop" class="milestone-label">Post SOP</label>
+                            </div>
+                        </div>
+                        <span class="helper-text" id="milestoneHelper">Current milestone is disabled. Select any milestone after it.</span>
+                        <span class="error-message" id="milestoneError">Please select a milestone</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="platform">2. Platform Selection <span class="required">*</span></label>
+                        <div class="platform-input-group">
+                            <select class="platform-select" id="platform" name="platform" required>
+                                <option value="">-- Select Platform --</option>
+                            </select>
+                            <button type="button" class="add-platform-btn" onclick="addNewPlatform()">
+                                ➕ Add New
+                            </button>
+                        </div>
+                        <div class="platform-add-panel" id="platformAddPanel">
+                            <input type="text" id="newPlatformInput" placeholder="Enter new platform name" autocomplete="off">
+                            <button type="button" class="platform-add-confirm" onclick="confirmAddPlatform()">Add</button>
+                            <button type="button" class="platform-add-cancel" onclick="cancelAddPlatform()">Cancel</button>
+                        </div>
+                        <span class="helper-text">Select existing platform or add new one</span>
+                        <span class="error-message" id="platformError">Please select platform</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="swimlanes">3. Swimlanes <span class="required">*</span></label>
+                        <textarea 
+                            id="swimlanes" 
+                            name="swimlanes" 
+                            placeholder="Enter swimlanes information..."
+                            required
+                        ></textarea>
+                        <span class="helper-text">Describe the swimlanes for this DFA</span>
+                        <span class="error-message" id="swimlanesError">Please enter swimlanes</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dfaOwner">4. DFA Owner / Assigned Person <span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            id="dfaOwner" 
+                            name="dfaOwner" 
+                            placeholder="Enter name of DFA owner"
+                            required
+                        >
+                        <span class="error-message" id="ownerError">Please enter DFA owner name</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tcNumber">5. TC Number <span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            id="tcNumber" 
+                            name="tcNumber" 
+                            placeholder="e.g., TC-12345"
+                            required
+                        >
+                        <span class="helper-text">Enter the technical component number</span>
+                        <span class="error-message" id="tcNumberError">Please enter TC number</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tcRevisionNumber">6. TC Revision Number <span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            id="tcRevisionNumber" 
+                            name="tcRevisionNumber" 
+                            placeholder="e.g., Rev A / R01"
+                            required
+                        >
+                        <span class="helper-text">Revision of the TC number</span>
+                        <span class="error-message" id="tcRevisionError">Please enter TC revision number</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tcDescription">7. Part Name <span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            id="tcDescription" 
+                            name="tcDescription" 
+                            placeholder="Enter part name"
+                            required
+                        >
+                        <span class="helper-text">Part name linked to this TC</span>
+                        <span class="error-message" id="descriptionError">Please enter part name</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="partRevision">8. Part Revision <span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            id="partRevision" 
+                            name="partRevision" 
+                            placeholder="e.g., Rev B / R02"
+                            required
+                        >
+                        <span class="helper-text">Revision number for the part name</span>
+                        <span class="error-message" id="partRevisionError">Please enter part revision</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>9. Version Number (Auto-incremented)</label>
+                        <div class="version-display">
+                            <span>📌 New Version:</span>
+                            <span class="version-badge" id="versionDisplay">v1.0</span>
+                        </div>
+                        <input type="hidden" id="versionNumber" name="versionNumber" value="v1.0">
+                        <span class="helper-text">Version is automatically incremented from previous DFA</span>
+                    </div>
+
+                    <div class="button-group">
+                        <div class="left-buttons">
+                            <button type="button" class="btn btn-secondary" onclick="goBackToSelection()">
+                                ← Back to Selection
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="saveDraft()">
+                                💾 Save Draft
+                            </button>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            Next to PFD →
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDFA = null;
+        let loadedExistingDFA = null;
+        let allDfas = [];
+        let filteredDfas = [];
+        let selectedDfaId = null;
+        let platforms = [];
+
+        const milestoneOrder = ['POC', 'MK1', 'MK2', 'MK3', 'X1', 'LVPT', 'HVPT', 'SOP', 'Post SOP'];
+
+        window.addEventListener('load', function() {
+            loadCurrentDFA();
+            loadPlatforms();
+            loadAllDfas();
+        });
+
+        function loadCurrentDFA() {
+            const dfaData = localStorage.getItem('currentDFA');
+            if (dfaData) {
+                currentDFA = JSON.parse(dfaData);
+                document.getElementById('dfaIdBadge').textContent = `DFA ID: ${currentDFA.dfaId}`;
+            } else {
+                alert('No active DFA session found. Redirecting to home...');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function loadPlatforms() {
+            const savedPlatforms = localStorage.getItem('platforms');
+            if (savedPlatforms) {
+                platforms = JSON.parse(savedPlatforms);
+            } else {
+                // Default platforms
+                platforms = ['Platform A', 'Platform B', 'EV Platform', 'Hybrid Platform'];
+                localStorage.setItem('platforms', JSON.stringify(platforms));
+            }
+            updatePlatformDropdown();
+        }
+
+        function updatePlatformDropdown() {
+            const select = document.getElementById('platform');
+            const currentValue = select.value;
+            
+            select.innerHTML = '<option value="">-- Select Platform --</option>';
+            platforms.forEach(platform => {
+                const option = document.createElement('option');
+                option.value = platform;
+                option.textContent = platform;
+                select.appendChild(option);
+            });
+            
+            if (currentValue && platforms.includes(currentValue)) {
+                select.value = currentValue;
+            }
+        }
+
+        function addNewPlatform() {
+            const panel = document.getElementById('platformAddPanel');
+            const input = document.getElementById('newPlatformInput');
+            if (!panel || !input) {
+                // Fallback if panel missing
+                const name = window.prompt('Enter new platform name:');
+                if (name && name.trim()) saveNewPlatform(name.trim());
+                return;
+            }
+            panel.classList.add('active');
+            input.value = '';
+            input.focus();
+        }
+
+        function cancelAddPlatform() {
+            const panel = document.getElementById('platformAddPanel');
+            const input = document.getElementById('newPlatformInput');
+            if (panel) panel.classList.remove('active');
+            if (input) input.value = '';
+        }
+
+        function confirmAddPlatform() {
+            const input = document.getElementById('newPlatformInput');
+            const name = (input && input.value ? input.value : '').trim();
+            if (!name) {
+                showToast('⚠️ Please enter a platform name', true);
+                if (input) input.focus();
+                return;
+            }
+            saveNewPlatform(name);
+        }
+
+        function saveNewPlatform(trimmedPlatform) {
+            const exists = platforms.some(p => p.toLowerCase() === trimmedPlatform.toLowerCase());
+            if (exists) {
+                showToast('⚠️ Platform already exists!', true);
+                return;
+            }
+            platforms.push(trimmedPlatform);
+            localStorage.setItem('platforms', JSON.stringify(platforms));
+            updatePlatformDropdown();
+            const select = document.getElementById('platform');
+            if (select) select.value = trimmedPlatform;
+            cancelAddPlatform();
+            showToast(`✅ Platform "${trimmedPlatform}" added successfully!`);
+        }
+
+        // Enter / Escape on the inline add field (script is at end of body)
+        (function bindPlatformAddKeys() {
+            const input = document.getElementById('newPlatformInput');
+            if (!input) return;
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmAddPlatform();
+                } else if (e.key === 'Escape') {
+                    cancelAddPlatform();
+                }
+            });
+        })();
+
+        function loadAllDfas() {
+            const allDFAData = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            allDfas = Object.values(allDFAData).sort((a, b) => 
+                new Date(b.metadata.createdAt) - new Date(a.metadata.createdAt)
+            );
+            filteredDfas = [...allDfas];
+            
+            populateNestedFilters();
+            updateStats();
+            renderDfaList();
+        }
+
+        function getDfaPlatform(dfa) {
+            return dfa.revup?.platform || dfa.newdfa?.platform || '';
+        }
+
+        function getDfaTc(dfa) {
+            return dfa.revup?.tcNumber || dfa.newdfa?.tcNumber || '';
+        }
+
+        function getDfaMilestone(dfa) {
+            return dfa.revup?.milestone || dfa.newdfa?.milestone || '';
+        }
+
+        function populateNestedFilters() {
+            const platformSelect = document.getElementById('filterPlatform');
+            if (!platformSelect) return;
+
+            const platformsSet = [...new Set(allDfas.map(getDfaPlatform).filter(Boolean))].sort();
+            const current = platformSelect.value;
+            platformSelect.innerHTML = '<option value="">All Platforms</option>';
+            platformsSet.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                platformSelect.appendChild(opt);
+            });
+            if (current && platformsSet.includes(current)) platformSelect.value = current;
+
+            refreshTcFilterOptions();
+            refreshMilestoneFilterOptions();
+        }
+
+        function refreshTcFilterOptions() {
+            const platform = document.getElementById('filterPlatform')?.value || '';
+            const tcSelect = document.getElementById('filterTc');
+            if (!tcSelect) return;
+
+            const source = platform
+                ? allDfas.filter(d => getDfaPlatform(d) === platform)
+                : allDfas;
+            const tcs = [...new Set(source.map(getDfaTc).filter(Boolean))].sort();
+            const prev = tcSelect.value;
+            tcSelect.innerHTML = '<option value="">All TC Numbers</option>';
+            tcs.forEach(tc => {
+                const opt = document.createElement('option');
+                opt.value = tc;
+                opt.textContent = tc;
+                tcSelect.appendChild(opt);
+            });
+            tcSelect.disabled = !platform;
+            if (platform && prev && tcs.includes(prev)) tcSelect.value = prev;
+            else tcSelect.value = '';
+        }
+
+        function refreshMilestoneFilterOptions() {
+            const platform = document.getElementById('filterPlatform')?.value || '';
+            const tc = document.getElementById('filterTc')?.value || '';
+            const msSelect = document.getElementById('filterMilestone');
+            if (!msSelect) return;
+
+            let source = allDfas;
+            if (platform) source = source.filter(d => getDfaPlatform(d) === platform);
+            if (tc) source = source.filter(d => getDfaTc(d) === tc);
+            const milestones = [...new Set(source.map(getDfaMilestone).filter(Boolean))];
+            milestones.sort((a, b) => milestoneOrder.indexOf(a) - milestoneOrder.indexOf(b));
+            const prev = msSelect.value;
+            msSelect.innerHTML = '<option value="">All Milestones</option>';
+            milestones.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                msSelect.appendChild(opt);
+            });
+            msSelect.disabled = !platform;
+            if (platform && prev && milestones.includes(prev)) msSelect.value = prev;
+            else msSelect.value = '';
+        }
+
+        function onPlatformFilterChange() {
+            refreshTcFilterOptions();
+            refreshMilestoneFilterOptions();
+            filterDfaList();
+        }
+
+        function onTcFilterChange() {
+            refreshMilestoneFilterOptions();
+            filterDfaList();
+        }
+
+        function updateStats() {
+            const total = allDfas.length;
+            const newDfaCount = allDfas.filter(dfa => dfa.metadata.applicationType === 'newdfa').length;
+            const revupCount = allDfas.filter(dfa => dfa.metadata.applicationType === 'revup').length;
+            
+            document.getElementById('totalDfaCount').textContent = total;
+            document.getElementById('newDfaCount').textContent = newDfaCount;
+            document.getElementById('revupDfaCount').textContent = revupCount;
+        }
+
+        function renderDfaList() {
+            const container = document.getElementById('dfaListContainer');
+            
+            if (filteredDfas.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>No DFAs Found</h3>
+                        <p>No existing DFAs to upgrade. Create a NEW DFA first or adjust your filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            filteredDfas.forEach(dfa => {
+                const card = createDfaCard(dfa);
+                container.appendChild(card);
+            });
+        }
+
+        function createDfaCard(dfa) {
+            const card = document.createElement('div');
+            card.className = 'dfa-card';
+            card.dataset.dfaId = dfa.dfaId;
+            
+            if (selectedDfaId === dfa.dfaId) {
+                card.classList.add('selected');
+            }
+
+            const typeBadgeClass = dfa.metadata.applicationType === 'revup' ? 'badge-revup' : 'badge-newdfa';
+            const typeText = dfa.metadata.applicationType === 'revup' ? 'REVUP' : 'NEW DFA';
+            const src = dfa.revup || dfa.newdfa || {};
+            
+            card.innerHTML = `
+                <div class="select-indicator"></div>
+                <div class="dfa-card-header">
+                    <div class="dfa-id">${dfa.dfaId}</div>
+                    <div class="dfa-type-badge ${typeBadgeClass}">${typeText}</div>
+                </div>
+                <div class="dfa-info-grid">
+                    <div class="dfa-info-item">
+                        <span class="dfa-info-label">Milestone</span>
+                        <span class="dfa-info-value">
+                            <span class="milestone-badge">${src.milestone || 'N/A'}</span>
+                        </span>
+                    </div>
+                    <div class="dfa-info-item">
+                        <span class="dfa-info-label">Platform</span>
+                        <span class="dfa-info-value">${src.platform || 'N/A'}</span>
+                    </div>
+                    <div class="dfa-info-item">
+                        <span class="dfa-info-label">TC Number</span>
+                        <span class="dfa-info-value">${src.tcNumber || 'N/A'}</span>
+                    </div>
+                    <div class="dfa-info-item">
+                        <span class="dfa-info-label">TC Revision</span>
+                        <span class="dfa-info-value">${src.tcRevisionNumber || 'N/A'}</span>
+                    </div>
+                    <div class="dfa-info-item">
+                        <span class="dfa-info-label">Part Name</span>
+                        <span class="dfa-info-value">${src.tcDescription || 'N/A'}</span>
+                    </div>
+                    <div class="dfa-info-item">
+                        <span class="dfa-info-label">Part Revision</span>
+                        <span class="dfa-info-value">${src.partRevision || 'N/A'}</span>
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener('click', () => selectDfa(dfa.dfaId));
+            
+            return card;
+        }
+
+        function selectDfa(dfaId) {
+            selectedDfaId = dfaId;
+            
+            // Update UI
+            document.querySelectorAll('.dfa-card').forEach(card => {
+                card.classList.remove('selected');
+                if (card.dataset.dfaId === dfaId) {
+                    card.classList.add('selected');
+                }
+            });
+
+            // Enable load button
+            document.getElementById('loadSelectedBtn').disabled = false;
+        }
+
+        function autoIncrementVersion(currentVersion) {
+            // Parse version like v1.0, v2.5, etc.
+            const match = currentVersion.match(/v?(\d+)\.(\d+)/);
+            if (match) {
+                const major = parseInt(match[1]);
+                const minor = parseInt(match[2]) + 1;
+                return `v${major}.${minor}`;
+            }
+            return 'v1.1';
+        }
+
+        function loadSelectedDFA() {
+            if (!selectedDfaId) return;
+
+            const allDFAData = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            loadedExistingDFA = allDFAData[selectedDfaId];
+
+            if (!loadedExistingDFA) {
+                alert('❌ Error loading DFA');
+                return;
+            }
+
+            const revupData = loadedExistingDFA.revup;
+            const currentMilestone = revupData.milestone;
+
+            // Hide selection section
+            document.getElementById('selectionSection').style.display = 'none';
+            
+            // Show form section
+            document.getElementById('formSection').classList.add('active');
+
+            // Populate upgrade info
+            document.getElementById('upgradeDfaId').textContent = loadedExistingDFA.dfaId;
+            document.getElementById('upgradePlatform').textContent = revupData.platform || 'N/A';
+            document.getElementById('upgradeCurrentVersion').textContent = revupData.versionNumber || 'N/A';
+            document.getElementById('currentMilestoneDisplay').textContent = currentMilestone;
+
+            // Enable only milestones AFTER current
+            enableMilestonesAfterCurrent(currentMilestone);
+
+            // Populate form with existing data
+            document.getElementById('platform').value = revupData.platform || '';
+            document.getElementById('swimlanes').value = revupData.swimlanes || '';
+            document.getElementById('dfaOwner').value = revupData.dfaOwner || '';
+            document.getElementById('tcNumber').value = revupData.tcNumber || '';
+            document.getElementById('tcRevisionNumber').value = revupData.tcRevisionNumber || '';
+            document.getElementById('tcDescription').value = revupData.tcDescription || '';
+            document.getElementById('partRevision').value = revupData.partRevision || '';
+
+            // Auto-increment version
+            const currentVersion = revupData.versionNumber || 'v1.0';
+            const newVersion = autoIncrementVersion(currentVersion);
+            document.getElementById('versionNumber').value = newVersion;
+            document.getElementById('versionDisplay').textContent = newVersion;
+
+            // Update DFA ID badge
+            document.getElementById('dfaIdBadge').textContent = `Upgrading: ${loadedExistingDFA.dfaId}`;
+
+            // Scroll to form
+            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            showToast(`✅ DFA Loaded! Version auto-incremented: ${currentVersion} → ${newVersion}`);
+        }
+
+        function enableMilestonesAfterCurrent(currentMilestone) {
+            const currentIndex = milestoneOrder.indexOf(currentMilestone);
+            
+            milestoneOrder.forEach((milestone, index) => {
+                const radio = document.getElementById(milestone.toLowerCase().replace(' ', ''));
+                const label = radio?.nextElementSibling;
+                
+                if (radio && label) {
+                    if (index <= currentIndex) {
+                        // Disable current and previous milestones (faded)
+                        radio.disabled = true;
+                        label.classList.add('disabled');
+                        label.title = 'Already completed';
+                    } else {
+                        // Enable all milestones AFTER current
+                        radio.disabled = false;
+                        label.classList.remove('disabled');
+                        label.title = 'Available for upgrade';
+                    }
+                }
+            });
+
+            // Update helper text
+            const availableMilestones = milestoneOrder.slice(currentIndex + 1);
+            document.getElementById('milestoneHelper').innerHTML = `
+                <strong style="color: #1B7A4E;">Available milestones:</strong> ${availableMilestones.join(', ')}
+            `;
+        }
+
+        function goBackToSelection() {
+            document.getElementById('selectionSection').style.display = 'block';
+            document.getElementById('formSection').classList.remove('active');
+            document.getElementById('dfaIdBadge').textContent = 'New REVUP Session';
+            
+            // Clear form
+            document.getElementById('revupForm').reset();
+            
+            // Re-enable all milestones
+            milestoneOrder.forEach(milestone => {
+                const radio = document.getElementById(milestone.toLowerCase().replace(' ', ''));
+                const label = radio?.nextElementSibling;
+                if (radio && label) {
+                    radio.disabled = false;
+                    label.classList.remove('disabled');
+                }
+            });
+        }
+
+        function filterDfaList() {
+            const searchTerm = (document.getElementById('searchDfaInput')?.value || '').toLowerCase();
+            const platform = document.getElementById('filterPlatform')?.value || '';
+            const tc = document.getElementById('filterTc')?.value || '';
+            const milestone = document.getElementById('filterMilestone')?.value || '';
+            const typeFilter = document.getElementById('filterType')?.value || 'all';
+
+            filteredDfas = allDfas.filter(dfa => {
+                if (platform && getDfaPlatform(dfa) !== platform) return false;
+                if (tc && getDfaTc(dfa) !== tc) return false;
+                if (milestone && getDfaMilestone(dfa) !== milestone) return false;
+                if (typeFilter === 'newdfa' && dfa.metadata.applicationType !== 'newdfa') return false;
+                if (typeFilter === 'revup' && dfa.metadata.applicationType !== 'revup') return false;
+
+                if (searchTerm) {
+                    const src = dfa.revup || dfa.newdfa || {};
+                    const searchableText = `
+                        ${dfa.dfaId}
+                        ${src.platform || ''}
+                        ${src.dfaOwner || ''}
+                        ${src.tcNumber || ''}
+                        ${src.tcRevisionNumber || ''}
+                        ${src.tcDescription || ''}
+                        ${src.partRevision || ''}
+                    `.toLowerCase();
+                    if (!searchableText.includes(searchTerm)) return false;
+                }
+                return true;
+            });
+
+            renderDfaList();
+        }
+
+        const form = document.getElementById('revupForm');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            clearErrors();
+            
+            if (validateForm()) {
+                const formData = new FormData(form);
+                const revupData = Object.fromEntries(formData);
+                revupData.completedAt = new Date().toISOString();
+                
+                // Add upgrade metadata
+                revupData.previousDfaId = loadedExistingDFA.dfaId;
+                revupData.previousMilestone = loadedExistingDFA.revup?.milestone;
+                revupData.previousVersion = loadedExistingDFA.revup?.versionNumber;
+                revupData.isUpgrade = true;
+                
+                const submitBtn = form.querySelector('.btn-primary');
+                submitBtn.classList.add('loading');
+                submitBtn.innerHTML = 'Saving...';
+                
+                setTimeout(() => {
+                    saveToStorage(revupData);
+                    
+                    document.getElementById('successMessage').classList.add('show');
+                    submitBtn.classList.remove('loading');
+                    submitBtn.innerHTML = 'Next to PFD →';
+                    
+                    setTimeout(() => {
+                        window.location.href = 'pfd.html';
+                    }, 1000);
+                }, 500);
+            }
+        });
+
+        function saveToStorage(revupData) {
+            currentDFA.revup = revupData;
+            currentDFA.metadata.lastUpdated = new Date().toISOString();
+            currentDFA.metadata.currentStep = 2;
+            currentDFA.metadata.isUpgrade = true;
+            currentDFA.metadata.upgradedFrom = loadedExistingDFA.dfaId;
+            
+            if (!currentDFA.metadata.completedSteps.includes(1)) {
+                currentDFA.metadata.completedSteps.push(1);
+            }
+            
+            localStorage.setItem('currentDFA', JSON.stringify(currentDFA));
+            
+            const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            allDFAs[currentDFA.dfaId] = currentDFA;
+            localStorage.setItem('allDFAData', JSON.stringify(allDFAs));
+            
+            console.log('REVUP DFA saved:', currentDFA.dfaId);
+            console.log('Upgraded from:', loadedExistingDFA.dfaId);
+            console.log('Milestone:', revupData.previousMilestone, '→', revupData.milestone);
+            console.log('Version:', revupData.previousVersion, '→', revupData.versionNumber);
+        }
+
+        function saveDraft() {
+            const formData = new FormData(form);
+            const revupData = Object.fromEntries(formData);
+            
+            currentDFA.revup = revupData;
+            currentDFA.metadata.lastUpdated = new Date().toISOString();
+            localStorage.setItem('currentDFA', JSON.stringify(currentDFA));
+            
+            const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            allDFAs[currentDFA.dfaId] = currentDFA;
+            localStorage.setItem('allDFAData', JSON.stringify(allDFAs));
+            
+            showToast('✓ Draft saved successfully!');
+        }
+
+        function validateForm() {
+            let isValid = true;
+            
+            const milestone = document.querySelector('input[name="milestone"]:checked');
+            if (!milestone) {
+                showError('milestoneError');
+                isValid = false;
+            }
+            
+            const requiredFields = [
+                { id: 'platform', errorId: 'platformError' },
+                { id: 'swimlanes', errorId: 'swimlanesError' },
+                { id: 'dfaOwner', errorId: 'ownerError' },
+                { id: 'tcNumber', errorId: 'tcNumberError' },
+                { id: 'tcRevisionNumber', errorId: 'tcRevisionError' },
+                { id: 'tcDescription', errorId: 'descriptionError' },
+                { id: 'partRevision', errorId: 'partRevisionError' }
+            ];
+            
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (!input.value.trim()) {
+                    showError(field.errorId, input);
+                    isValid = false;
+                }
+            });
+            
+            return isValid;
+        }
+
+        function showError(errorId, inputElement) {
+            const errorMsg = document.getElementById(errorId);
+            errorMsg.classList.add('show');
+            if (inputElement) {
+                inputElement.classList.add('error');
+            }
+        }
+
+        function clearErrors() {
+            const errorMessages = document.querySelectorAll('.error-message');
+            errorMessages.forEach(msg => msg.classList.remove('show'));
+            
+            const errorInputs = document.querySelectorAll('.error');
+            errorInputs.forEach(input => input.classList.remove('error'));
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${isError ? '#e74c3c' : '#1B7A4E'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                z-index: 10000;
+                animation: slideInRight 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.classList.contains('error')) {
+                    this.classList.remove('error');
+                    const errorId = this.id + 'Error';
+                    const errorMsg = document.getElementById(errorId);
+                    if (errorMsg) {
+                        errorMsg.classList.remove('show');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
