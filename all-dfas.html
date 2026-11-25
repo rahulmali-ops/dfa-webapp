@@ -1429,8 +1429,32 @@
             return { total: total, p5: p5, p3: p3, count: count };
         }
 
+        function evaluateGateStatus(overallScore, priority5Score, p5CriticalFails) {
+            const p5Clear = (priority5Score >= 99.999) && (p5CriticalFails === 0);
+            if (!p5Clear || overallScore < 70) {
+                return {
+                    gateStatus: 'FAILED',
+                    gateAction: 'CAD freeze blocked. Immediate redesign required for failed rules.',
+                    gateColor: 'poor'
+                };
+            }
+            if (overallScore >= 85) {
+                return {
+                    gateStatus: 'PASS',
+                    gateAction: 'Design approved for tooling release and prototype build freeze.',
+                    gateColor: 'excellent'
+                };
+            }
+            return {
+                gateStatus: 'CONDITIONAL PASS',
+                gateAction: 'Manufacturable. Requires signed engineering waiver for P3 deviations.',
+                gateColor: 'average'
+            };
+        }
+
         function calculateDFAScore(data) {
             // Fail = full P×W, Conditionally Passed = 0.5×P×W. Applicable = full catalog.
+            // Gate: PASS >=85% & P5=100%; CONDITIONAL 70-84.9% & P5=100%; else FAILED.
             if (!data.amr || !data.amr.steps || data.amr.steps.length === 0) {
                 return null;
             }
@@ -1443,6 +1467,7 @@
             let priority3Penalties = 0;
             let failedItems = [];
             let failCount = 0;
+            let p5CriticalFails = 0;
             const seen = new Set();
 
             function penaltyFactor(status) {
@@ -1469,20 +1494,19 @@
                     totalPenalties += ruleValue;
                     failCount += 1;
                     failedItems.push(amrId);
-                    if (amrInfo.priority === 5) priority5Penalties += ruleValue;
-                    else if (amrInfo.priority === 3) priority3Penalties += ruleValue;
+                    if (amrInfo.priority === 5) {
+                        priority5Penalties += ruleValue;
+                        if (factor >= 1) p5CriticalFails += 1;
+                    } else if (amrInfo.priority === 3) {
+                        priority3Penalties += ruleValue;
+                    }
                 });
             });
 
             const overallScore = 100 - ((totalPenalties / catalog.total) * 100);
             const priority5Score = catalog.p5 > 0 ? 100 - ((priority5Penalties / catalog.p5) * 100) : 100;
             const priority3Score = catalog.p3 > 0 ? 100 - ((priority3Penalties / catalog.p3) * 100) : 100;
-
-            let rating, color;
-            if (overallScore >= 90) { rating = 'Excellent'; color = 'score-excellent'; }
-            else if (overallScore >= 75) { rating = 'Good'; color = 'score-good'; }
-            else if (overallScore >= 60) { rating = 'Average'; color = 'score-average'; }
-            else { rating = 'Needs Improvement'; color = 'score-poor'; }
+            const gate = evaluateGateStatus(overallScore, priority5Score, p5CriticalFails);
 
             return {
                 overall: overallScore,
@@ -1497,9 +1521,12 @@
                 failedItems: failedItems,
                 applicableCount: catalog.count,
                 failCount: failCount,
-                rating: rating,
-                color: color,
-                formula: '100 - (Penalties / Applicable x 100); Fail=full, Conditionally Passed=half; Applicable = full AMR catalog'
+                p5CriticalFails: p5CriticalFails,
+                gateStatus: gate.gateStatus,
+                gateAction: gate.gateAction,
+                rating: gate.gateStatus,
+                color: gate.gateColor,
+                formula: 'Gate: PASS >=85% & P5=100%; CONDITIONAL 70-84.9% & P5=100%; else FAILED'
             };
         }
 
@@ -1908,23 +1935,32 @@
             });
         }
 
-        function getDFAScoreBadge(score) {
-            if (score === null) {
+        function getDFAScoreBadge(scoreOrData) {
+            if (scoreOrData === null || scoreOrData === undefined) {
                 return `<span class="dfa-score-badge not-calculated">
                     <span class="score-icon">⊘</span> Not Calculated
                 </span>`;
             }
 
+            const scoreData = (typeof scoreOrData === 'object') ? scoreOrData : null;
+            const score = scoreData ? scoreData.overall : scoreOrData;
+            const gate = scoreData && scoreData.gateStatus ? scoreData.gateStatus : null;
+
             let className = '';
             let icon = '';
-            
-            if (score >= 90) {
+            if (gate === 'PASS') {
                 className = 'excellent';
-                icon = '🌟';
-            } else if (score >= 75) {
-                className = 'good';
                 icon = '✅';
-            } else if (score >= 60) {
+            } else if (gate === 'CONDITIONAL PASS') {
+                className = 'average';
+                icon = '⚠️';
+            } else if (gate === 'FAILED') {
+                className = 'poor';
+                icon = '❌';
+            } else if (score >= 85) {
+                className = 'excellent';
+                icon = '✅';
+            } else if (score >= 70) {
                 className = 'average';
                 icon = '⚠️';
             } else {
@@ -1932,8 +1968,12 @@
                 icon = '❌';
             }
 
-            return `<span class="dfa-score-badge ${className}">
-                <span class="score-icon">${icon}</span> ${score.toFixed(2)}%
+            const label = gate
+                ? `${gate} · ${score.toFixed(1)}%`
+                : `${score.toFixed(2)}%`;
+
+            return `<span class="dfa-score-badge ${className}" title="${scoreData && scoreData.gateAction ? scoreData.gateAction : ''}">
+                <span class="score-icon">${icon}</span> ${label}
             </span>`;
         }
 
@@ -2014,7 +2054,7 @@
                 const status = dfa.metadata.status || 'in-progress';
                 
                 const scoreData = calculateDFAScore(dfa);
-                const scoreBadge = getDFAScoreBadge(scoreData ? scoreData.overall : null);
+                const scoreBadge = getDFAScoreBadge(scoreData);
                 const stepScores = getStepScores(dfa);
 
                 let stepScoresHTML = '';

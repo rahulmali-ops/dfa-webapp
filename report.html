@@ -221,6 +221,53 @@
             color: white;
         }
 
+        .gate-pass {
+            background: linear-gradient(145deg, #1B7A4E 0%, #2D9B6A 100%);
+            color: white;
+        }
+
+        .gate-conditional {
+            background: linear-gradient(135deg, #E67E22 0%, #D35400 100%);
+            color: white;
+        }
+
+        .gate-failed {
+            background: linear-gradient(135deg, #C62828 0%, #B71C1C 100%);
+            color: white;
+        }
+
+        .gate-card {
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin: 16px 0 22px;
+            border: 1px solid #D3DBE3;
+            background: #f7faf9;
+        }
+
+        .gate-card h3 {
+            margin: 0 0 10px;
+            font-size: 1rem;
+            color: #0B4F4A;
+        }
+
+        .gate-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .gate-table th, .gate-table td {
+            border: 1px solid #D3DBE3;
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .gate-table th {
+            background: #0B4F4A;
+            color: white;
+        }
+
         .score-breakdown {
             background: #f8f9fa;
             padding: 20px;
@@ -1201,6 +1248,30 @@
             return { total: total, p5: p5, p3: p3, count: count };
         }
 
+        function evaluateGateStatus(overallScore, priority5Score, p5CriticalFails) {
+            // Virtual DFA Quality System — two-tier gate governance
+            // Tier 1 = Overall Score; Tier 2 = Priority 5 must be 100% (0 critical fails)
+            const p5Clear = (priority5Score >= 99.999) && (p5CriticalFails === 0);
+            let gateStatus, gateAction, gateColor;
+
+            if (!p5Clear || overallScore < 70) {
+                gateStatus = 'FAILED';
+                gateAction = 'CAD freeze blocked. Immediate redesign required for failed rules.';
+                gateColor = 'gate-failed';
+            } else if (overallScore >= 85) {
+                gateStatus = 'PASS';
+                gateAction = 'Design approved for tooling release and prototype build freeze.';
+                gateColor = 'gate-pass';
+            } else {
+                // 70.0% – 84.9% with P5 clear
+                gateStatus = 'CONDITIONAL PASS';
+                gateAction = 'Manufacturable. Requires signed engineering waiver for P3 deviations.';
+                gateColor = 'gate-conditional';
+            }
+
+            return { gateStatus, gateAction, gateColor, p5Clear };
+        }
+
         function calculateDFAScore(data) {
             // Penalties from AMR statuses: Fail = full P×W, Conditionally Passed = 0.5×P×W.
             // Applicable = full AMR catalog. Score = 100 - (∑ Penalties / ∑ Applicable × 100).
@@ -1217,6 +1288,7 @@
             let failedItems = [];
             let failCount = 0;
             let conditionalCount = 0;
+            let p5CriticalFails = 0;
             const seen = new Set();
 
             function penaltyFactor(status) {
@@ -1245,8 +1317,12 @@
                     failCount += 1;
                     if (factor < 1) conditionalCount += 1;
                     failedItems.push(amrId);
-                    if (amrInfo.priority === 5) priority5Penalties += ruleValue;
-                    else if (amrInfo.priority === 3) priority3Penalties += ruleValue;
+                    if (amrInfo.priority === 5) {
+                        priority5Penalties += ruleValue;
+                        if (factor >= 1) p5CriticalFails += 1;
+                    } else if (amrInfo.priority === 3) {
+                        priority3Penalties += ruleValue;
+                    }
                 });
             });
 
@@ -1254,11 +1330,7 @@
             const priority5Score = catalog.p5 > 0 ? 100 - ((priority5Penalties / catalog.p5) * 100) : 100;
             const priority3Score = catalog.p3 > 0 ? 100 - ((priority3Penalties / catalog.p3) * 100) : 100;
 
-            let rating, color;
-            if (overallScore >= 90) { rating = 'Excellent'; color = 'score-excellent'; }
-            else if (overallScore >= 75) { rating = 'Good'; color = 'score-good'; }
-            else if (overallScore >= 60) { rating = 'Average'; color = 'score-average'; }
-            else { rating = 'Needs Improvement'; color = 'score-poor'; }
+            const gate = evaluateGateStatus(overallScore, priority5Score, p5CriticalFails);
 
             return {
                 overall: overallScore,
@@ -1274,9 +1346,14 @@
                 applicableCount: catalog.count,
                 failCount: failCount,
                 conditionalCount: conditionalCount,
-                rating: rating,
-                color: color,
-                formula: '100 - (Penalties / Applicable x 100); Fail=full, Conditionally Passed=half; Applicable = full AMR catalog'
+                p5CriticalFails: p5CriticalFails,
+                gateStatus: gate.gateStatus,
+                gateAction: gate.gateAction,
+                gateColor: gate.gateColor,
+                p5Clear: gate.p5Clear,
+                rating: gate.gateStatus,
+                color: gate.gateColor,
+                formula: '100 - (Penalties / Applicable x 100); Fail=full, Conditionally Passed=half; Applicable = full AMR catalog. Gate: PASS >=85% & P5=100%; CONDITIONAL 70-84.9% & P5=100%; else FAILED.'
             };
         }
 
@@ -1402,9 +1479,48 @@
                 return section;
             }
             section.innerHTML = `
-                <h2 class="section-title">DFA Score</h2>
-                <div class="dfa-score-badge ${scoreData.color}">
-                    ${scoreData.overall.toFixed(2)}% — ${scoreData.rating}
+                <h2 class="section-title">DFA Score &amp; Gate Status</h2>
+                <div class="dfa-score-badge ${scoreData.gateColor || scoreData.color}">
+                    ${scoreData.gateStatus} — Overall ${scoreData.overall.toFixed(2)}%
+                </div>
+                <p style="font-size:0.95rem;line-height:1.5;color:#15202B;margin:8px 0 18px;">
+                    <strong>Decision:</strong> ${scoreData.gateAction}
+                </p>
+                <div class="gate-card">
+                    <h3>Virtual DFA Passing Criteria (Two-Tier Gate)</h3>
+                    <p style="font-size:0.82rem;color:#5C6B7A;margin:0 0 12px;line-height:1.45;">
+                        Tier 1 = Overall Score (assembly / line cycle). Tier 2 = Priority 5 Gate (zero-tolerance critical tooling / clearances).
+                    </p>
+                    <table class="gate-table">
+                        <thead>
+                            <tr>
+                                <th>Gate Status</th>
+                                <th>Tier 1: Overall</th>
+                                <th>Tier 2: Priority 5</th>
+                                <th>Decision &amp; Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="${scoreData.gateStatus === 'PASS' ? 'background:#e8f5e9;' : ''}">
+                                <td><strong>PASS</strong></td>
+                                <td>&ge; 85.0%</td>
+                                <td>100% (0 Critical Fails)</td>
+                                <td>Design approved for tooling release and prototype build freeze.</td>
+                            </tr>
+                            <tr style="${scoreData.gateStatus === 'CONDITIONAL PASS' ? 'background:#fff3e0;' : ''}">
+                                <td><strong>CONDITIONAL PASS</strong></td>
+                                <td>70.0% – 84.9%</td>
+                                <td>100% (0 Critical Fails)</td>
+                                <td>Manufacturable. Requires signed engineering waiver for P3 deviations.</td>
+                            </tr>
+                            <tr style="${scoreData.gateStatus === 'FAILED' ? 'background:#ffebee;' : ''}">
+                                <td><strong>FAILED</strong></td>
+                                <td>&lt; 70.0% OR any score</td>
+                                <td>&lt; 100% (&ge; 1 P5 Fail)</td>
+                                <td>CAD freeze blocked. Immediate redesign required for failed rules.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <div class="score-breakdown">
                     <h3>Score Breakdown</h3>
@@ -1413,12 +1529,12 @@
                         Each rule value = Priority × Weightage. Fail = full penalty, Conditionally Passed = half. Applicable = full AMR catalog.
                     </p>
                     <div class="score-item">
-                        <span class="score-label">Overall Score</span>
+                        <span class="score-label">Tier 1 — Overall Score</span>
                         <span class="score-value">${scoreData.overall.toFixed(2)}%</span>
                     </div>
                     <div class="score-item">
-                        <span class="score-label">Priority 5 Compliance</span>
-                        <span class="score-value">${scoreData.priority5.toFixed(2)}%</span>
+                        <span class="score-label">Tier 2 — Priority 5 Compliance</span>
+                        <span class="score-value">${scoreData.priority5.toFixed(2)}% (${scoreData.p5CriticalFails || 0} critical fails)</span>
                     </div>
                     <div class="score-item">
                         <span class="score-label">Priority 3 Compliance</span>
@@ -1429,7 +1545,7 @@
                         <span class="score-value">${scoreData.totalPenalties} / ${scoreData.totalApplicable}</span>
                     </div>
                     <div class="score-item">
-                        <span class="score-label">Applicable rules / Fails</span>
+                        <span class="score-label">Applicable rules / Flagged</span>
                         <span class="score-value">${scoreData.applicableCount || 0} / ${scoreData.failCount || scoreData.failedItems.length}</span>
                     </div>
                 </div>
@@ -2372,53 +2488,57 @@
                 // ===== 6. SCORE (last) =====
                 updateProgress(92, 'DFA score...');
                 ensureSpace(70);
-                drawSectionBanner('6. DFA Score');
+                drawSectionBanner('6. DFA Score & Gate Status');
 
                 if (scoreData) {
                     let accent = tealMid;
-                    if (scoreData.overall >= 90) accent = [46, 125, 50];
-                    else if (scoreData.overall >= 75) accent = [25, 118, 210];
-                    else if (scoreData.overall >= 60) accent = [230, 126, 34];
+                    if (scoreData.gateStatus === 'PASS') accent = [46, 125, 50];
+                    else if (scoreData.gateStatus === 'CONDITIONAL PASS') accent = [230, 126, 34];
                     else accent = [198, 40, 40];
 
-                    ensureSpace(26);
+                    ensureSpace(30);
                     doc.setDrawColor(...accent);
                     doc.setFillColor(...soft);
                     doc.setLineWidth(0.55);
-                    doc.roundedRect(margin, yPos, contentWidth, 20, 1.8, 1.8, 'FD');
+                    doc.roundedRect(margin, yPos, contentWidth, 24, 1.8, 1.8, 'FD');
                     doc.setFillColor(...accent);
-                    doc.roundedRect(margin, yPos, 3.2, 20, 1, 1, 'F');
+                    doc.roundedRect(margin, yPos, 3.2, 24, 1, 1, 'F');
 
                     doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(15);
+                    doc.setFontSize(13);
                     doc.setTextColor(...slate);
-                    doc.text(`${scoreData.overall.toFixed(2)}%`, margin + 9, yPos + 9);
+                    doc.text(String(scoreData.gateStatus || 'FAILED'), margin + 9, yPos + 9);
                     doc.setFont('helvetica', 'normal');
                     doc.setFontSize(9);
                     doc.setTextColor(...muted);
-                    doc.text(String(scoreData.rating || ''), margin + 9, yPos + 15.5);
-                    doc.setFontSize(8.5);
-                    doc.text('Overall DFA Score', pageWidth - margin - 6, yPos + 11.5, { align: 'right' });
-                    yPos += 26;
+                    doc.text(`Overall ${scoreData.overall.toFixed(2)}%  |  P5 ${scoreData.priority5.toFixed(2)}%`, margin + 9, yPos + 16);
+                    doc.setFontSize(8);
+                    doc.text('Gate Status', pageWidth - margin - 6, yPos + 13, { align: 'right' });
+                    yPos += 30;
 
-                    // ASCII-only formula card (Helvetica cannot render Sigma/minus/times/middot)
-                    const formulaRows = [
+                    const actionLines = doc.splitTextToSize('Decision: ' + (scoreData.gateAction || ''), contentWidth - 2);
+                    ensureSpace(actionLines.length * 4 + 6);
+                    doc.setFontSize(8.5);
+                    doc.setTextColor(...slate);
+                    doc.text(actionLines, margin, yPos);
+                    yPos += actionLines.length * 4 + 6;
+
+                    drawKvTable([
+                        ['PASS', 'Overall >= 85% AND Priority 5 = 100% (0 critical fails)'],
+                        ['CONDITIONAL PASS', 'Overall 70.0%-84.9% AND Priority 5 = 100%'],
+                        ['FAILED', 'Overall < 70% OR Priority 5 < 100% (>= 1 P5 fail)'],
                         ['Formula', 'Score % = 100 - (Sum of Penalties / Sum of Applicable x 100)'],
-                        ['Rule value', 'Priority x Weightage'],
-                        ['Fail', 'Full penalty (1.0 x rule value)'],
-                        ['Conditionally / Partially Passed', 'Half penalty (0.5 x rule value)'],
-                        ['Pass / N/A', 'No penalty'],
+                        ['Fail / Conditional', 'Full P x W / Half (0.5 x P x W)'],
                         ['Applicable', 'Full AMR catalog']
-                    ];
-                    drawKvTable(formulaRows);
+                    ]);
 
                     drawKvGrid([
-                        ['Overall Score', `${scoreData.overall.toFixed(2)}%`],
-                        ['Priority 5 Compliance', `${scoreData.priority5.toFixed(2)}%`],
+                        ['Tier 1 Overall', `${scoreData.overall.toFixed(2)}%`],
+                        ['Tier 2 Priority 5', `${scoreData.priority5.toFixed(2)}%`],
+                        ['P5 Critical Fails', String(scoreData.p5CriticalFails || 0)],
                         ['Priority 3 Compliance', `${scoreData.priority3.toFixed(2)}%`],
                         ['Penalties / Applicable', `${scoreData.totalPenalties} / ${scoreData.totalApplicable}`],
-                        ['Catalog / Flagged rules', `${scoreData.applicableCount || 0} / ${scoreData.failCount || (scoreData.failedItems || []).length}`],
-                        ['Conditional / Partial', String(scoreData.conditionalCount || 0)]
+                        ['Catalog / Flagged', `${scoreData.applicableCount || 0} / ${scoreData.failCount || (scoreData.failedItems || []).length}`]
                     ]);
                 } else {
                     doc.setFont('helvetica', 'normal');
