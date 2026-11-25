@@ -1185,13 +1185,24 @@
                     </div>
 
                     <div class="form-group">
-                        <label>9. Version Number (Auto-incremented)</label>
+                        <label for="versionApplicable">9. Is Version Applicable? <span class="required">*</span></label>
+                        <select id="versionApplicable" name="versionApplicable" required onchange="updateVersionFromApplicability()">
+                            <option value="">-- Select --</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                        <span class="helper-text">If Yes, version increases from previous. If No, version stays the same.</span>
+                        <span class="error-message" id="versionApplicableError">Please select if version is applicable</span>
+                    </div>
+
+                    <div class="form-group" id="versionNumberGroup">
+                        <label>10. Version Number</label>
                         <div class="version-display">
-                            <span>📌 New Version:</span>
-                            <span class="version-badge" id="versionDisplay">v1.0</span>
+                            <span>📌 Version:</span>
+                            <span class="version-badge" id="versionDisplay">—</span>
                         </div>
-                        <input type="hidden" id="versionNumber" name="versionNumber" value="v1.0">
-                        <span class="helper-text">Version is automatically incremented from previous DFA</span>
+                        <input type="hidden" id="versionNumber" name="versionNumber" value="">
+                        <span class="helper-text" id="versionHelper">Select whether version is applicable first</span>
                     </div>
 
                     <div class="button-group">
@@ -1220,6 +1231,7 @@
         let selectedDfaId = null;
         let platforms = [];
         let swimlanesList = [];
+        let previousVersionNumber = 'N/A';
 
         const milestoneOrder = ['POC', 'MK1', 'MK2', 'MK3', 'X1', 'LVPT', 'HVPT', 'SOP', 'Post SOP'];
 
@@ -1643,14 +1655,44 @@
         }
 
         function autoIncrementVersion(currentVersion) {
-            // Parse version like v1.0, v2.5, etc.
-            const match = currentVersion.match(/v?(\d+)\.(\d+)/);
-            if (match) {
-                const major = parseInt(match[1]);
-                const minor = parseInt(match[2]) + 1;
-                return `v${major}.${minor}`;
+            const raw = String(currentVersion || '').trim();
+            // v1 / v2 (major only)
+            const majorOnly = raw.match(/^v?(\d+)$/i);
+            if (majorOnly) {
+                return `v${parseInt(majorOnly[1], 10) + 1}`;
             }
-            return 'v1.1';
+            // v1.0, v2.5, etc. — bump major for REVUP when applicable
+            const dotted = raw.match(/^v?(\d+)\.(\d+)/i);
+            if (dotted) {
+                return `v${parseInt(dotted[1], 10) + 1}`;
+            }
+            // No prior version → start at v1
+            return 'v1';
+        }
+
+        function updateVersionFromApplicability() {
+            const applicable = document.getElementById('versionApplicable').value;
+            const versionInput = document.getElementById('versionNumber');
+            const versionDisplay = document.getElementById('versionDisplay');
+            const helper = document.getElementById('versionHelper');
+            const prev = previousVersionNumber || 'N/A';
+
+            if (applicable === 'Yes') {
+                const next = (prev === 'N/A' || !prev || prev === '—')
+                    ? 'v1'
+                    : autoIncrementVersion(prev);
+                versionInput.value = next;
+                versionDisplay.textContent = next;
+                helper.textContent = `Version applicable — increased from ${prev} to ${next}.`;
+            } else if (applicable === 'No') {
+                versionInput.value = prev;
+                versionDisplay.textContent = prev;
+                helper.textContent = `Version not applicable — kept same as previous (${prev}).`;
+            } else {
+                versionInput.value = '';
+                versionDisplay.textContent = '—';
+                helper.textContent = 'Select whether version is applicable first';
+            }
         }
 
         function loadSelectedDFA() {
@@ -1705,11 +1747,12 @@
             document.getElementById('tcDescription').value = revupData.tcDescription || '';
             document.getElementById('partRevision').value = revupData.partRevision || '';
 
-            // Auto-increment version
-            const currentVersion = revupData.versionNumber || 'v1.0';
-            const newVersion = autoIncrementVersion(currentVersion);
-            document.getElementById('versionNumber').value = newVersion;
-            document.getElementById('versionDisplay').textContent = newVersion;
+            // Version applicability: ask again; default from previous if stored
+            previousVersionNumber = revupData.versionNumber || 'N/A';
+            document.getElementById('upgradeCurrentVersion').textContent = previousVersionNumber;
+            const prevApplicable = revupData.versionApplicable || '';
+            document.getElementById('versionApplicable').value = prevApplicable;
+            updateVersionFromApplicability();
 
             // Update DFA ID badge
             document.getElementById('dfaIdBadge').textContent = `Upgrading: ${loadedExistingDFA.dfaId}`;
@@ -1717,7 +1760,7 @@
             // Scroll to form
             document.getElementById('formSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-            showToast(`✅ DFA Loaded! Version auto-incremented: ${currentVersion} → ${newVersion}`);
+            showToast(`✅ DFA Loaded! Previous version: ${previousVersionNumber}. Choose if version is applicable.`);
         }
 
         function enableMilestonesAfterCurrent(currentMilestone) {
@@ -1812,6 +1855,9 @@
                 const formData = new FormData(form);
                 const revupData = Object.fromEntries(formData);
                 revupData.completedAt = new Date().toISOString();
+                updateVersionFromApplicability();
+                revupData.versionApplicable = document.getElementById('versionApplicable').value;
+                revupData.versionNumber = document.getElementById('versionNumber').value;
                 
                 // Add upgrade metadata
                 revupData.previousDfaId = loadedExistingDFA.dfaId;
@@ -1891,7 +1937,8 @@
                 { id: 'tcNumber', errorId: 'tcNumberError' },
                 { id: 'tcRevisionNumber', errorId: 'tcRevisionError' },
                 { id: 'tcDescription', errorId: 'descriptionError' },
-                { id: 'partRevision', errorId: 'partRevisionError' }
+                { id: 'partRevision', errorId: 'partRevisionError' },
+                { id: 'versionApplicable', errorId: 'versionApplicableError' }
             ];
             
             requiredFields.forEach(field => {

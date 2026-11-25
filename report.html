@@ -1646,6 +1646,10 @@
                             <span class="milestone-badge">${revupData.milestone || 'Not specified'}</span>
                         </div>
                     </div>
+                    <div class="info-item editable" data-section="${sectionKey}" data-field="versionApplicable">
+                        <div class="info-label">Version Applicable</div>
+                        <div class="info-value">${revupData.versionApplicable || '<span class="empty">Not specified</span>'}</div>
+                    </div>
                     <div class="info-item editable" data-section="${sectionKey}" data-field="versionNumber">
                         <div class="info-label">Version Number</div>
                         <div class="info-value">${revupData.versionNumber || '<span class="empty">Not specified</span>'}</div>
@@ -2275,6 +2279,7 @@
                     ['Platform ID', detailSrc.platformId || '-'],
                     ['Swimlanes', detailSrc.swimlanes || '-'],
                     ['Build Milestone', detailSrc.milestone || '-'],
+                    ['Version Applicable', detailSrc.versionApplicable || '-'],
                     ['Version', detailSrc.versionNumber || '-'],
                     ['Status', dfaData.metadata?.status || 'In Progress'],
                     ['Created', dfaData.metadata?.createdAt ? new Date(dfaData.metadata.createdAt).toLocaleDateString() : '-'],

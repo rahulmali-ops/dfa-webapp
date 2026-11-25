@@ -570,7 +570,7 @@
 
         <div class="form-container">
             <div class="info-banner">
-                <p>ℹ️ <strong>NEW DFA:</strong> This is for first-time DFA with POC (Proof of Concept) milestone only. Version starts at v1.0.</p>
+                <p>ℹ️ <strong>NEW DFA:</strong> This is for first-time DFA with POC (Proof of Concept) milestone only. If version is applicable, it starts at v1.</p>
             </div>
 
             <div class="success-message" id="successMessage">
@@ -660,13 +660,24 @@
                 </div>
 
                 <div class="form-group">
-                    <label>6. Version Number (Auto-set for NEW DFA)</label>
+                    <label for="versionApplicable">6. Is Version Applicable? <span class="required">*</span></label>
+                    <select id="versionApplicable" name="versionApplicable" required onchange="updateVersionFromApplicability()">
+                        <option value="">-- Select --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                    <span class="helper-text">If Yes, version starts at v1 and will increase on next REVUP. If No, version stays unchanged.</span>
+                    <span class="error-message" id="versionApplicableError">Please select if version is applicable</span>
+                </div>
+
+                <div class="form-group" id="versionNumberGroup">
+                    <label>7. Version Number</label>
                     <div class="version-display">
-                        <span>📌 Initial Version:</span>
-                        <span class="version-badge">v1.0</span>
+                        <span>📌 Version:</span>
+                        <span class="version-badge" id="versionDisplay">—</span>
                     </div>
-                    <input type="hidden" id="versionNumber" name="versionNumber" value="v1.0">
-                    <span class="helper-text">NEW DFA always starts with version v1.0</span>
+                    <input type="hidden" id="versionNumber" name="versionNumber" value="">
+                    <span class="helper-text" id="versionHelper">Select whether version is applicable first</span>
                 </div>
 
                 <div class="button-group">
@@ -931,6 +942,36 @@
                         if (element) element.value = revupData[field];
                     }
                 });
+
+                if (revupData.versionApplicable) {
+                    document.getElementById('versionApplicable').value = revupData.versionApplicable;
+                    updateVersionFromApplicability();
+                    if (revupData.versionNumber) {
+                        document.getElementById('versionNumber').value = revupData.versionNumber;
+                        document.getElementById('versionDisplay').textContent = revupData.versionNumber;
+                    }
+                }
+            }
+        }
+
+        function updateVersionFromApplicability() {
+            const applicable = document.getElementById('versionApplicable').value;
+            const versionInput = document.getElementById('versionNumber');
+            const versionDisplay = document.getElementById('versionDisplay');
+            const helper = document.getElementById('versionHelper');
+
+            if (applicable === 'Yes') {
+                versionInput.value = 'v1';
+                versionDisplay.textContent = 'v1';
+                helper.textContent = 'Version applicable — assigned v1. Next REVUP will increase it.';
+            } else if (applicable === 'No') {
+                versionInput.value = 'N/A';
+                versionDisplay.textContent = 'N/A (unchanged)';
+                helper.textContent = 'Version not applicable — kept as N/A / unchanged.';
+            } else {
+                versionInput.value = '';
+                versionDisplay.textContent = '—';
+                helper.textContent = 'Select whether version is applicable first';
             }
         }
 
@@ -945,9 +986,14 @@
                 const formData = new FormData(form);
                 const newdfaData = Object.fromEntries(formData);
                 
-                // Force milestone to POC and version to v1.0
+                // Force milestone to POC; version based on applicability
                 newdfaData.milestone = 'POC';
-                newdfaData.versionNumber = 'v1.0';
+                newdfaData.versionApplicable = document.getElementById('versionApplicable').value;
+                if (newdfaData.versionApplicable === 'Yes') {
+                    newdfaData.versionNumber = 'v1';
+                } else {
+                    newdfaData.versionNumber = 'N/A';
+                }
                 newdfaData.completedAt = new Date().toISOString();
                 
                 const submitBtn = form.querySelector('.btn-primary');
@@ -989,7 +1035,14 @@
             const formData = new FormData(form);
             const newdfaData = Object.fromEntries(formData);
             newdfaData.milestone = 'POC';
-            newdfaData.versionNumber = 'v1.0';
+            newdfaData.versionApplicable = document.getElementById('versionApplicable').value || '';
+            if (newdfaData.versionApplicable === 'Yes') {
+                newdfaData.versionNumber = 'v1';
+            } else if (newdfaData.versionApplicable === 'No') {
+                newdfaData.versionNumber = 'N/A';
+            } else {
+                newdfaData.versionNumber = '';
+            }
             
             currentDFA.revup = newdfaData;
             currentDFA.metadata.lastUpdated = new Date().toISOString();
@@ -1010,7 +1063,8 @@
                 { id: 'swimlanes', errorId: 'swimlanesError' },
                 { id: 'dfaOwner', errorId: 'ownerError' },
                 { id: 'tcNumber', errorId: 'tcNumberError' },
-                { id: 'tcDescription', errorId: 'descriptionError' }
+                { id: 'tcDescription', errorId: 'descriptionError' },
+                { id: 'versionApplicable', errorId: 'versionApplicableError' }
             ];
             
             requiredFields.forEach(field => {
