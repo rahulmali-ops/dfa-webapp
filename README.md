@@ -1,6 +1,6 @@
-# DFA WebApp
+# DFA - Design for Assembly
 
-Design Failure Analysis web app (static HTML/CSS/JS). Data is stored in the browser `localStorage`.
+Design for Assembly web app (static HTML/CSS/JS). Data is stored in the browser `localStorage`.
 
 ## Run locally
 

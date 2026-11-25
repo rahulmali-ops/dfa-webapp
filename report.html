@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="theme.css">
 
-    <title>DFA Report - Comprehensive View</title>
+    <title>DFA - Design for Assembly Report</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -1459,9 +1459,9 @@
             const section = document.createElement('div');
             section.className = 'report-header';
             section.innerHTML = `
-                <h1 class="report-title">DFA Comprehensive Report</h1>
+                <h1 class="report-title">DFA - Design for Assembly Report</h1>
                 <p class="report-id">DFA ID: ${data.dfaId}</p>
-                <p class="report-subtitle">Design Failure Analysis - ${data.selection.type.toUpperCase()}</p>
+                <p class="report-subtitle">Design for Assembly - ${data.selection.type.toUpperCase()}</p>
                 <p class="report-date">Generated on: ${new Date().toLocaleString()}</p>
             `;
             return section;
@@ -2241,10 +2241,10 @@
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(17);
                 doc.setTextColor(...white);
-                doc.text('DFA Comprehensive Report', pageWidth / 2, 15, { align: 'center' });
+                doc.text('DFA - Design for Assembly Report', pageWidth / 2, 15, { align: 'center' });
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(9);
-                doc.text('Design Failure Analysis  |  A4 Professional Layout', pageWidth / 2, 23.5, { align: 'center' });
+                doc.text('Design for Assembly  |  A4 Professional Layout', pageWidth / 2, 23.5, { align: 'center' });
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(10);
                 doc.text(String(dfaData.dfaId || '-'), pageWidth / 2, 32, { align: 'center' });
@@ -2631,7 +2631,7 @@
                     doc.setTextColor(...muted);
                     doc.text(String(dfaData.dfaId || ''), margin, pageHeight - 8);
                     doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
-                    doc.text('DFA WebApp | A4', pageWidth - margin, pageHeight - 8, { align: 'right' });
+                    doc.text('DFA - Design for Assembly | A4', pageWidth - margin, pageHeight - 8, { align: 'right' });
                 }
 
                 updateProgress(98, 'Saving PDF...');

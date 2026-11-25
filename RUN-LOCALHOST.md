@@ -1,4 +1,4 @@
-# Run DFA WebApp on your laptop (real localhost)
+# Run DFA - Design for Assembly on your laptop (real localhost)
 
 The cloud agent’s `http://127.0.0.1:8765` is **inside the remote VM**. Your browser’s `127.0.0.1` is your PC — they are different machines, so you get `ERR_CONNECTION_REFUSED (-102)`.
 
