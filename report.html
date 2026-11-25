@@ -1900,9 +1900,10 @@
                             <th>AMR Requirement</th>
                             <th>Status</th>
                             <th>Tool</th>
-                            <th>Impact</th>
-                            <th>Machine CTQ</th>
+                            <th>Impact Category</th>
+                            <th>Impact Desc</th>
                             <th>Cost Impact</th>
+                            <th>Machine CTQ</th>
                             <th>Alignment F&amp;T</th>
                         </tr>
                     </thead>
@@ -1927,9 +1928,10 @@
                             </span>
                         </td>
                         <td>${item.tool || '-'}</td>
-                        <td style="font-size: 0.8rem;">${item.impact || '-'}</td>
-                        <td style="font-size: 0.8rem;">${item.machineCTQ || '-'}</td>
+                        <td style="font-size: 0.8rem;">${item.impactCategory || '-'}</td>
+                        <td style="font-size: 0.8rem;">${item.impactDesc || item.impact || '-'}</td>
                         <td style="font-size: 0.8rem;">${item.costImpact || '-'}</td>
+                        <td style="font-size: 0.8rem;">${item.machineCTQ || '-'}</td>
                         <td style="font-size: 0.8rem;">${item.alignmentFT || '-'}</td>
                     </tr>
                 `;
@@ -2468,9 +2470,10 @@
                             const amrBlock = `${item.amrId || d.id}\n${d.requirement || '-'}`;
                             const details = [
                                 `Tool: ${item.tool || '-'}`,
-                                `Impact: ${item.impact || '-'}`,
-                                `Machine CTQ: ${item.machineCTQ || '-'}`,
+                                `Impact Category: ${item.impactCategory || '-'}`,
+                                `Impact Desc: ${item.impactDesc || item.impact || '-'}`,
                                 `Cost Impact: ${item.costImpact || '-'}`,
+                                `Machine CTQ: ${item.machineCTQ || '-'}`,
                                 `Alignment F&T: ${item.alignmentFT || '-'}`
                             ].join('\n');
                             return [

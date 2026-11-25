@@ -993,7 +993,7 @@
                 <p><strong>How it works:</strong> Every AMR from Requirements appears here — Pass, Fail, Conditionally Passed, or any status — grouped by category inside each step.</p>
                 <p>1️⃣ For each requirement, choose <strong>Facility Impact?</strong> Yes or No (applicability)</p>
                 <p>2️⃣ If <strong>Yes</strong> → choose facility (HOSUR / AURIC / BOTH) and set status: <strong>Pass / Fail / Partially Passed</strong></p>
-                <p>3️⃣ Also fill Tool, Impact, Machine CTQ, <strong>Cost Impact</strong>, and <strong>Alignment with F and T</strong> (Pending / Done)</p>
+                <p>3️⃣ Also fill Tool, <strong>Impact Category</strong>, <strong>Impact Desc</strong>, Machine CTQ, <strong>Cost Impact</strong>, and <strong>Alignment with F and T</strong> (Pending / Done)</p>
                 <p>4️⃣ Report layout &amp; scoring stay as previously configured</p>
             </div>
         </div>
@@ -1115,18 +1115,34 @@
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Impact:</label>
-                            <textarea id="hosurImpact" placeholder="Describe impact..." rows="3"></textarea>
+                            <label class="modal-form-label">Impact Category:</label>
+                            <select id="hosurImpactCategory">
+                                <option value="">-- Select Impact Category --</option>
+                                <option value="Cost">Cost</option>
+                                <option value="Time">Time</option>
+                                <option value="Quality">Quality</option>
+                                <option value="Safety">Safety</option>
+                                <option value="Tooling">Tooling</option>
+                                <option value="Process">Process</option>
+                                <option value="Design">Design</option>
+                                <option value="Ergonomics">Ergonomics</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Machine CTQ:</label>
-                            <input type="text" id="hosurMachineCTQ" placeholder="Enter machine CTQ...">
+                            <label class="modal-form-label">Impact Desc:</label>
+                            <textarea id="hosurImpactDesc" placeholder="Describe the impact..." rows="3"></textarea>
                         </div>
 
                         <div class="modal-form-group">
                             <label class="modal-form-label">Cost Impact:</label>
                             <input type="text" id="hosurCostImpact" placeholder="Enter cost impact...">
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Machine CTQ:</label>
+                            <input type="text" id="hosurMachineCTQ" placeholder="Enter machine CTQ...">
                         </div>
 
                         <div class="modal-form-group">
@@ -1160,18 +1176,34 @@
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Impact:</label>
-                            <textarea id="auricImpact" placeholder="Describe impact..." rows="3"></textarea>
+                            <label class="modal-form-label">Impact Category:</label>
+                            <select id="auricImpactCategory">
+                                <option value="">-- Select Impact Category --</option>
+                                <option value="Cost">Cost</option>
+                                <option value="Time">Time</option>
+                                <option value="Quality">Quality</option>
+                                <option value="Safety">Safety</option>
+                                <option value="Tooling">Tooling</option>
+                                <option value="Process">Process</option>
+                                <option value="Design">Design</option>
+                                <option value="Ergonomics">Ergonomics</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Machine CTQ:</label>
-                            <input type="text" id="auricMachineCTQ" placeholder="Enter machine CTQ...">
+                            <label class="modal-form-label">Impact Desc:</label>
+                            <textarea id="auricImpactDesc" placeholder="Describe the impact..." rows="3"></textarea>
                         </div>
 
                         <div class="modal-form-group">
                             <label class="modal-form-label">Cost Impact:</label>
                             <input type="text" id="auricCostImpact" placeholder="Enter cost impact...">
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label class="modal-form-label">Machine CTQ:</label>
+                            <input type="text" id="auricMachineCTQ" placeholder="Enter machine CTQ...">
                         </div>
 
                         <div class="modal-form-group">
@@ -1524,7 +1556,8 @@
                     `<div style="margin-bottom: 8px; padding: 6px; background: #f8f9fa; border-radius: 4px;">
                         <strong>${entry.facility}:</strong><br>
                         Tool: ${entry.tool || 'N/A'}<br>
-                        Impact: ${entry.impact || 'N/A'}<br>
+                        Impact Category: ${entry.impactCategory || 'N/A'}<br>
+                        Impact Desc: ${entry.impactDesc || entry.impact || 'N/A'}<br>
                         Cost Impact: ${entry.costImpact || 'N/A'}<br>
                         Alignment F&amp;T: ${entry.alignmentFT || 'N/A'}
                     </div>`
@@ -1578,22 +1611,33 @@
             if (status === 'Conditionally Passed') status = 'Partially Passed';
             statusEl.value = ['Pass', 'Fail', 'Partially Passed'].includes(status) ? status : 'Fail';
             document.getElementById(prefix + 'Tool').value = entry.tool || '';
-            document.getElementById(prefix + 'Impact').value = entry.impact || '';
-            document.getElementById(prefix + 'MachineCTQ').value = entry.machineCTQ || '';
+            const categoryEl = document.getElementById(prefix + 'ImpactCategory');
+            const category = entry.impactCategory || '';
+            if (category && !Array.from(categoryEl.options).some(o => o.value === category)) {
+                const opt = document.createElement('option');
+                opt.value = category;
+                opt.textContent = category;
+                categoryEl.appendChild(opt);
+            }
+            categoryEl.value = category;
+            document.getElementById(prefix + 'ImpactDesc').value = entry.impactDesc || entry.impact || '';
             document.getElementById(prefix + 'CostImpact').value = entry.costImpact || '';
+            document.getElementById(prefix + 'MachineCTQ').value = entry.machineCTQ || '';
             document.getElementById(prefix + 'AlignmentFT').value = entry.alignmentFT || 'Pending';
         }
 
         function clearFacilityForm(prefix) {
             document.getElementById(prefix + 'Status').value = 'Fail';
             document.getElementById(prefix + 'Tool').value = '';
-            document.getElementById(prefix + 'Impact').value = '';
-            document.getElementById(prefix + 'MachineCTQ').value = '';
+            document.getElementById(prefix + 'ImpactCategory').value = '';
+            document.getElementById(prefix + 'ImpactDesc').value = '';
             document.getElementById(prefix + 'CostImpact').value = '';
+            document.getElementById(prefix + 'MachineCTQ').value = '';
             document.getElementById(prefix + 'AlignmentFT').value = 'Pending';
         }
 
         function readFacilityForm(prefix, stepNumber, amrId, facility) {
+            const impactDesc = document.getElementById(prefix + 'ImpactDesc').value;
             return {
                 stepNumber: stepNumber,
                 amrId: amrId,
@@ -1601,7 +1645,9 @@
                 facility: facility,
                 status: document.getElementById(prefix + 'Status').value,
                 tool: document.getElementById(prefix + 'Tool').value,
-                impact: document.getElementById(prefix + 'Impact').value,
+                impactCategory: document.getElementById(prefix + 'ImpactCategory').value,
+                impactDesc: impactDesc,
+                impact: impactDesc, // backward compatible with older report fields
                 machineCTQ: document.getElementById(prefix + 'MachineCTQ').value,
                 costImpact: document.getElementById(prefix + 'CostImpact').value,
                 alignmentFT: document.getElementById(prefix + 'AlignmentFT').value,
