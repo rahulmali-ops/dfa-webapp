@@ -1102,21 +1102,22 @@
 
                         <div class="modal-form-group">
                             <label class="modal-form-label">AMR Status: <span style="color: red;">*</span></label>
-                            <select id="hosurStatus">
+                            <select id="hosurStatus" required>
+                                <option value="">-- Select Status --</option>
                                 <option value="Pass">✅ Pass</option>
-                                <option value="Fail" selected>❌ Fail</option>
+                                <option value="Fail">❌ Fail</option>
                                 <option value="Partially Passed">◐ Partially Passed</option>
                             </select>
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Tool:</label>
-                            <input type="text" id="hosurTool" placeholder="Enter tool name...">
+                            <label class="modal-form-label">Tool: <span style="color: red;">*</span></label>
+                            <input type="text" id="hosurTool" placeholder="Enter tool name..." required>
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Impact Category:</label>
-                            <select id="hosurImpactCategory">
+                            <label class="modal-form-label">Impact Category: <span style="color: red;">*</span></label>
+                            <select id="hosurImpactCategory" required>
                                 <option value="">-- Select Impact Category --</option>
                                 <option value="Gauges and Fixture">Gauges and Fixture</option>
                                 <option value="Tools">Tools</option>
@@ -1125,24 +1126,25 @@
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Impact Desc:</label>
-                            <textarea id="hosurImpactDesc" placeholder="Describe the impact..." rows="3"></textarea>
+                            <label class="modal-form-label">Impact Desc: <span style="color: red;">*</span></label>
+                            <textarea id="hosurImpactDesc" placeholder="Describe the impact..." rows="3" required></textarea>
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Cost Impact:</label>
-                            <input type="text" id="hosurCostImpact" placeholder="Enter cost impact...">
+                            <label class="modal-form-label">Cost Impact: <span style="color: red;">*</span></label>
+                            <input type="text" id="hosurCostImpact" placeholder="Enter cost impact..." required>
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Machine CTQ:</label>
-                            <input type="text" id="hosurMachineCTQ" placeholder="Enter machine CTQ...">
+                            <label class="modal-form-label">Machine CTQ: <span style="color: red;">*</span></label>
+                            <input type="text" id="hosurMachineCTQ" placeholder="Enter machine CTQ..." required>
                         </div>
 
                         <div class="modal-form-group">
                             <label class="modal-form-label">Alignment with F and T: <span style="color: red;">*</span></label>
-                            <select id="hosurAlignmentFT">
-                                <option value="Pending" selected>Pending</option>
+                            <select id="hosurAlignmentFT" required>
+                                <option value="">-- Select Alignment --</option>
+                                <option value="Pending">Pending</option>
                                 <option value="Done">Done</option>
                             </select>
                         </div>
@@ -1157,21 +1159,22 @@
 
                         <div class="modal-form-group">
                             <label class="modal-form-label">AMR Status: <span style="color: red;">*</span></label>
-                            <select id="auricStatus">
+                            <select id="auricStatus" required>
+                                <option value="">-- Select Status --</option>
                                 <option value="Pass">✅ Pass</option>
-                                <option value="Fail" selected>❌ Fail</option>
+                                <option value="Fail">❌ Fail</option>
                                 <option value="Partially Passed">◐ Partially Passed</option>
                             </select>
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Tool:</label>
-                            <input type="text" id="auricTool" placeholder="Enter tool name...">
+                            <label class="modal-form-label">Tool: <span style="color: red;">*</span></label>
+                            <input type="text" id="auricTool" placeholder="Enter tool name..." required>
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Impact Category:</label>
-                            <select id="auricImpactCategory">
+                            <label class="modal-form-label">Impact Category: <span style="color: red;">*</span></label>
+                            <select id="auricImpactCategory" required>
                                 <option value="">-- Select Impact Category --</option>
                                 <option value="Gauges and Fixture">Gauges and Fixture</option>
                                 <option value="Tools">Tools</option>
@@ -1180,24 +1183,25 @@
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Impact Desc:</label>
-                            <textarea id="auricImpactDesc" placeholder="Describe the impact..." rows="3"></textarea>
+                            <label class="modal-form-label">Impact Desc: <span style="color: red;">*</span></label>
+                            <textarea id="auricImpactDesc" placeholder="Describe the impact..." rows="3" required></textarea>
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Cost Impact:</label>
-                            <input type="text" id="auricCostImpact" placeholder="Enter cost impact...">
+                            <label class="modal-form-label">Cost Impact: <span style="color: red;">*</span></label>
+                            <input type="text" id="auricCostImpact" placeholder="Enter cost impact..." required>
                         </div>
 
                         <div class="modal-form-group">
-                            <label class="modal-form-label">Machine CTQ:</label>
-                            <input type="text" id="auricMachineCTQ" placeholder="Enter machine CTQ...">
+                            <label class="modal-form-label">Machine CTQ: <span style="color: red;">*</span></label>
+                            <input type="text" id="auricMachineCTQ" placeholder="Enter machine CTQ..." required>
                         </div>
 
                         <div class="modal-form-group">
                             <label class="modal-form-label">Alignment with F and T: <span style="color: red;">*</span></label>
-                            <select id="auricAlignmentFT">
-                                <option value="Pending" selected>Pending</option>
+                            <select id="auricAlignmentFT" required>
+                                <option value="">-- Select Alignment --</option>
+                                <option value="Pending">Pending</option>
                                 <option value="Done">Done</option>
                             </select>
                         </div>
@@ -1592,12 +1596,65 @@
             return 'linear-gradient(135deg, #e2e3e5 0%, #d6d8db 100%)';
         }
 
+        function facilityFormFields(prefix) {
+            return [
+                { id: prefix + 'Status', label: 'AMR Status' },
+                { id: prefix + 'Tool', label: 'Tool' },
+                { id: prefix + 'ImpactCategory', label: 'Impact Category' },
+                { id: prefix + 'ImpactDesc', label: 'Impact Desc' },
+                { id: prefix + 'CostImpact', label: 'Cost Impact' },
+                { id: prefix + 'MachineCTQ', label: 'Machine CTQ' },
+                { id: prefix + 'AlignmentFT', label: 'Alignment with F and T' }
+            ];
+        }
+
+        function markFieldInvalid(el, invalid) {
+            if (!el) return;
+            el.style.borderColor = invalid ? '#C62828' : '';
+            el.style.boxShadow = invalid ? '0 0 0 2px rgba(198, 40, 40, 0.15)' : '';
+        }
+
+        function validateFacilityForm(prefix, facilityName) {
+            const missing = [];
+            let firstInvalid = null;
+            facilityFormFields(prefix).forEach(function(field) {
+                const el = document.getElementById(field.id);
+                const value = el ? String(el.value || '').trim() : '';
+                const invalid = !value;
+                markFieldInvalid(el, invalid);
+                if (invalid) {
+                    missing.push(field.label);
+                    if (!firstInvalid) firstInvalid = el;
+                }
+            });
+            if (missing.length) {
+                showToast(`⚠️ ${facilityName}: fill all mandatory fields (${missing.join(', ')})`, true);
+                if (firstInvalid) firstInvalid.focus();
+                return false;
+            }
+            return true;
+        }
+
+        function isFacilityEntryComplete(entry) {
+            if (!entry) return false;
+            return Boolean(
+                entry.facility &&
+                entry.status &&
+                String(entry.tool || '').trim() &&
+                String(entry.impactCategory || '').trim() &&
+                String(entry.impactDesc || entry.impact || '').trim() &&
+                String(entry.costImpact || '').trim() &&
+                String(entry.machineCTQ || '').trim() &&
+                String(entry.alignmentFT || '').trim()
+            );
+        }
+
         function fillFacilityForm(prefix, entry) {
             const statusEl = document.getElementById(prefix + 'Status');
-            let status = entry.status || 'Fail';
+            let status = entry.status || '';
             if (status === 'NA' || status === 'Not Applicable') status = 'Fail';
             if (status === 'Conditionally Passed') status = 'Partially Passed';
-            statusEl.value = ['Pass', 'Fail', 'Partially Passed'].includes(status) ? status : 'Fail';
+            statusEl.value = ['Pass', 'Fail', 'Partially Passed'].includes(status) ? status : '';
             document.getElementById(prefix + 'Tool').value = entry.tool || '';
             const categoryEl = document.getElementById(prefix + 'ImpactCategory');
             const category = entry.impactCategory || '';
@@ -1611,17 +1668,23 @@
             document.getElementById(prefix + 'ImpactDesc').value = entry.impactDesc || entry.impact || '';
             document.getElementById(prefix + 'CostImpact').value = entry.costImpact || '';
             document.getElementById(prefix + 'MachineCTQ').value = entry.machineCTQ || '';
-            document.getElementById(prefix + 'AlignmentFT').value = entry.alignmentFT || 'Pending';
+            document.getElementById(prefix + 'AlignmentFT').value = entry.alignmentFT || '';
+            facilityFormFields(prefix).forEach(function(field) {
+                markFieldInvalid(document.getElementById(field.id), false);
+            });
         }
 
         function clearFacilityForm(prefix) {
-            document.getElementById(prefix + 'Status').value = 'Fail';
+            document.getElementById(prefix + 'Status').value = '';
             document.getElementById(prefix + 'Tool').value = '';
             document.getElementById(prefix + 'ImpactCategory').value = '';
             document.getElementById(prefix + 'ImpactDesc').value = '';
             document.getElementById(prefix + 'CostImpact').value = '';
             document.getElementById(prefix + 'MachineCTQ').value = '';
-            document.getElementById(prefix + 'AlignmentFT').value = 'Pending';
+            document.getElementById(prefix + 'AlignmentFT').value = '';
+            facilityFormFields(prefix).forEach(function(field) {
+                markFieldInvalid(document.getElementById(field.id), false);
+            });
         }
 
         function readFacilityForm(prefix, stepNumber, amrId, facility) {
@@ -1771,6 +1834,13 @@
                 return;
             }
 
+            if ((selectedFacility === 'HOSUR' || selectedFacility === 'BOTH') && !validateFacilityForm('hosur', 'HOSUR')) {
+                return;
+            }
+            if ((selectedFacility === 'AURIC' || selectedFacility === 'BOTH') && !validateFacilityForm('auric', 'AURIC')) {
+                return;
+            }
+
             const { stepNumber, amrId } = currentEditingRow;
 
             // Remove existing entries for this AMR
@@ -1885,6 +1955,41 @@
         }
 
         function proceedToReport() {
+            const incomplete = analysisData.filter(function(item) {
+                return item.applicable === 'Yes' && !isFacilityEntryComplete(item);
+            });
+            if (incomplete.length) {
+                const sample = incomplete.slice(0, 3).map(function(item) {
+                    return `${item.amrId} (${item.facility || 'no facility'})`;
+                }).join(', ');
+                showToast(`⚠️ Cannot go to Report. Fill all mandatory facility fields for: ${sample}${incomplete.length > 3 ? '…' : ''}`, true);
+                return;
+            }
+
+            const yesWithoutFacility = [];
+            if (currentDFA.amr && currentDFA.amr.steps) {
+                currentDFA.amr.steps.forEach(function(step) {
+                    getStepCategoryGroups(step).forEach(function(group) {
+                        group.amrIds.forEach(function(amrId) {
+                            const row = document.getElementById(`row_${step.number}_${amrId}`);
+                            const select = row ? row.querySelector('.applicability-select') : null;
+                            if (select && select.value === 'Yes') {
+                                const entries = analysisData.filter(function(item) {
+                                    return item.stepNumber === step.number && item.amrId === amrId && item.applicable === 'Yes';
+                                });
+                                if (!entries.length || entries.some(function(item) { return !isFacilityEntryComplete(item); })) {
+                                    yesWithoutFacility.push(amrId);
+                                }
+                            }
+                        });
+                    });
+                });
+            }
+            if (yesWithoutFacility.length) {
+                showToast(`⚠️ Complete facility details for: ${yesWithoutFacility.slice(0, 3).join(', ')}${yesWithoutFacility.length > 3 ? '…' : ''}`, true);
+                return;
+            }
+
             saveAnalysis();
             currentDFA.metadata.status = 'completed';
             localStorage.setItem('currentDFA', JSON.stringify(currentDFA));
