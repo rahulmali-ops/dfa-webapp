@@ -371,6 +371,55 @@
             background: #0B4F4A;
         }
 
+        .platform-add-panel {
+            display: none;
+            gap: 10px;
+            margin-top: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .platform-add-panel.active {
+            display: flex;
+        }
+
+        .platform-add-panel input {
+            flex: 1;
+            min-width: 180px;
+            padding: 10px 12px;
+            border: 2px solid #D3DBE3;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .platform-add-confirm,
+        .platform-add-cancel {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .platform-add-confirm {
+            background: #147A72;
+            color: white;
+        }
+
+        .platform-add-confirm:hover {
+            background: #0B4F4A;
+        }
+
+        .platform-add-cancel {
+            background: #E8EEF0;
+            color: #15202B;
+        }
+
+        .platform-add-cancel:hover {
+            background: #D3DBE3;
+        }
+
         .version-display {
             background: #E6F5F3;
             border: 2px solid #147A72;
@@ -556,14 +605,21 @@
 
                 <div class="form-group">
                     <label for="swimlanes">2. Swimlanes <span class="required">*</span></label>
-                    <textarea 
-                        id="swimlanes" 
-                        name="swimlanes" 
-                        placeholder="Enter swimlanes information..."
-                        required
-                    ></textarea>
-                    <span class="helper-text">Describe the swimlanes for this DFA</span>
-                    <span class="error-message" id="swimlanesError">Please enter swimlanes</span>
+                    <div class="platform-input-group">
+                        <select class="platform-select" id="swimlanes" name="swimlanes" required>
+                            <option value="">-- Select Swimlane --</option>
+                        </select>
+                        <button type="button" class="add-platform-btn" onclick="addNewSwimlane()">
+                            ➕ Add New
+                        </button>
+                    </div>
+                    <div class="platform-add-panel" id="swimlaneAddPanel">
+                        <input type="text" id="newSwimlaneInput" placeholder="Enter new swimlane name" autocomplete="off">
+                        <button type="button" class="platform-add-confirm" onclick="confirmAddSwimlane()">Add</button>
+                        <button type="button" class="platform-add-cancel" onclick="cancelAddSwimlane()">Cancel</button>
+                    </div>
+                    <span class="helper-text">Select existing swimlane or add new one</span>
+                    <span class="error-message" id="swimlanesError">Please select swimlanes</span>
                 </div>
 
                 <div class="form-group">
@@ -633,10 +689,12 @@
     <script>
         let currentDFA = null;
         let platforms = [];
+        let swimlanesList = [];
 
         window.addEventListener('load', function() {
             loadCurrentDFA();
             loadPlatforms();
+            loadSwimlanes();
             loadSavedData();
         });
 
@@ -741,11 +799,132 @@
             });
         })();
 
+        function loadSwimlanes() {
+            const saved = localStorage.getItem('swimlanes');
+            if (saved) {
+                swimlanesList = JSON.parse(saved);
+            } else {
+                swimlanesList = ['Chassis', 'Body', 'Powertrain', 'Interior', 'Electrical'];
+                localStorage.setItem('swimlanes', JSON.stringify(swimlanesList));
+            }
+            // Absorb any previously typed free-text values from saved DFAs
+            try {
+                const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+                Object.values(allDFAs).forEach(function(dfa) {
+                    const val = (dfa.revup && dfa.revup.swimlanes) || (dfa.newdfa && dfa.newdfa.swimlanes) || '';
+                    if (val && !swimlanesList.some(s => s.toLowerCase() === String(val).toLowerCase())) {
+                        swimlanesList.push(String(val));
+                    }
+                });
+                localStorage.setItem('swimlanes', JSON.stringify(swimlanesList));
+            } catch (e) { /* ignore */ }
+            updateSwimlaneDropdown();
+        }
+
+        function updateSwimlaneDropdown() {
+            const select = document.getElementById('swimlanes');
+            if (!select) return;
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">-- Select Swimlane --</option>';
+            swimlanesList.forEach(function(name) {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+            if (currentValue && swimlanesList.includes(currentValue)) {
+                select.value = currentValue;
+            }
+        }
+
+        function addNewSwimlane() {
+            const panel = document.getElementById('swimlaneAddPanel');
+            const input = document.getElementById('newSwimlaneInput');
+            if (!panel || !input) {
+                const name = window.prompt('Enter new swimlane name:');
+                if (name && name.trim()) saveNewSwimlane(name.trim());
+                return;
+            }
+            panel.classList.add('active');
+            input.value = '';
+            input.focus();
+        }
+
+        function cancelAddSwimlane() {
+            const panel = document.getElementById('swimlaneAddPanel');
+            const input = document.getElementById('newSwimlaneInput');
+            if (panel) panel.classList.remove('active');
+            if (input) input.value = '';
+        }
+
+        function confirmAddSwimlane() {
+            const input = document.getElementById('newSwimlaneInput');
+            const name = (input && input.value ? input.value : '').trim();
+            if (!name) {
+                showToast('⚠️ Please enter a swimlane name', true);
+                if (input) input.focus();
+                return;
+            }
+            saveNewSwimlane(name);
+        }
+
+        function saveNewSwimlane(trimmed) {
+            const exists = swimlanesList.some(s => s.toLowerCase() === trimmed.toLowerCase());
+            if (exists) {
+                showToast('⚠️ Swimlane already exists!', true);
+                return;
+            }
+            swimlanesList.push(trimmed);
+            localStorage.setItem('swimlanes', JSON.stringify(swimlanesList));
+            updateSwimlaneDropdown();
+            const select = document.getElementById('swimlanes');
+            if (select) select.value = trimmed;
+            cancelAddSwimlane();
+            showToast(`✅ Swimlane "${trimmed}" added successfully!`);
+        }
+
+        (function bindSwimlaneAddKeys() {
+            const input = document.getElementById('newSwimlaneInput');
+            if (!input) return;
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmAddSwimlane();
+                } else if (e.key === 'Escape') {
+                    cancelAddSwimlane();
+                }
+            });
+        })();
+
+        function ensureOptionSelected(selectId, value) {
+            if (!value) return;
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            const found = Array.from(select.options).some(o => o.value === value);
+            if (!found) {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+            }
+            select.value = value;
+        }
+
         function loadSavedData() {
             if (currentDFA && currentDFA.revup) {
                 const revupData = currentDFA.revup;
-                
-                const fields = ['platform', 'swimlanes', 'dfaOwner', 'tcNumber', 'tcDescription'];
+
+                if (revupData.platform) ensureOptionSelected('platform', revupData.platform);
+                if (revupData.swimlanes) {
+                    if (!swimlanesList.some(s => s.toLowerCase() === String(revupData.swimlanes).toLowerCase())) {
+                        swimlanesList.push(revupData.swimlanes);
+                        localStorage.setItem('swimlanes', JSON.stringify(swimlanesList));
+                        updateSwimlaneDropdown();
+                    }
+                    ensureOptionSelected('swimlanes', revupData.swimlanes);
+                }
+
+                const fields = ['dfaOwner', 'tcNumber', 'tcDescription'];
                 fields.forEach(field => {
                     if (revupData[field]) {
                         const element = document.getElementById(field);
