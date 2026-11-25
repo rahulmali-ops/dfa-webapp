@@ -1487,17 +1487,17 @@
                     <strong>Decision:</strong> ${scoreData.gateAction}
                 </p>
                 <div class="gate-card">
-                    <h3>Virtual DFA Passing Criteria (Two-Tier Gate)</h3>
+                    <h3>Virtual DFA Passing Criteria &amp; Gate Governance</h3>
                     <p style="font-size:0.82rem;color:#5C6B7A;margin:0 0 12px;line-height:1.45;">
-                        Tier 1 = Overall Score (assembly / line cycle). Tier 2 = Priority 5 Gate (zero-tolerance critical tooling / clearances).
+                        Two-Tier Evaluation Standard — Tier 1: Overall Score (assembly / line cycle). Tier 2: Priority 5 Gate (zero-tolerance critical tooling / clearances).
                     </p>
                     <table class="gate-table">
                         <thead>
                             <tr>
                                 <th>Gate Status</th>
-                                <th>Tier 1: Overall</th>
-                                <th>Tier 2: Priority 5</th>
-                                <th>Decision &amp; Action</th>
+                                <th>Tier 1: Overall Score</th>
+                                <th>Tier 2: Priority 5 Rules</th>
+                                <th>Decision &amp; Action Required</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2492,17 +2492,25 @@
 
                 if (scoreData) {
                     let accent = tealMid;
-                    if (scoreData.gateStatus === 'PASS') accent = [46, 125, 50];
-                    else if (scoreData.gateStatus === 'CONDITIONAL PASS') accent = [230, 126, 34];
-                    else accent = [198, 40, 40];
+                    let accentSoft = soft;
+                    if (scoreData.gateStatus === 'PASS') {
+                        accent = [46, 125, 50];
+                        accentSoft = [232, 245, 233];
+                    } else if (scoreData.gateStatus === 'CONDITIONAL PASS') {
+                        accent = [230, 126, 34];
+                        accentSoft = [255, 243, 224];
+                    } else {
+                        accent = [198, 40, 40];
+                        accentSoft = [255, 235, 238];
+                    }
 
                     ensureSpace(30);
                     doc.setDrawColor(...accent);
-                    doc.setFillColor(...soft);
+                    doc.setFillColor(...accentSoft);
                     doc.setLineWidth(0.55);
-                    doc.roundedRect(margin, yPos, contentWidth, 24, 1.8, 1.8, 'FD');
+                    doc.roundedRect(margin, yPos, contentWidth, 26, 1.8, 1.8, 'FD');
                     doc.setFillColor(...accent);
-                    doc.roundedRect(margin, yPos, 3.2, 24, 1, 1, 'F');
+                    doc.roundedRect(margin, yPos, 3.2, 26, 1, 1, 'F');
 
                     doc.setFont('helvetica', 'bold');
                     doc.setFontSize(13);
@@ -2511,27 +2519,90 @@
                     doc.setFont('helvetica', 'normal');
                     doc.setFontSize(9);
                     doc.setTextColor(...muted);
-                    doc.text(`Overall ${scoreData.overall.toFixed(2)}%  |  P5 ${scoreData.priority5.toFixed(2)}%`, margin + 9, yPos + 16);
-                    doc.setFontSize(8);
-                    doc.text('Gate Status', pageWidth - margin - 6, yPos + 13, { align: 'right' });
-                    yPos += 30;
+                    doc.text(
+                        `Tier 1 Overall ${scoreData.overall.toFixed(2)}%  |  Tier 2 P5 ${scoreData.priority5.toFixed(2)}%  |  Critical Fails ${scoreData.p5CriticalFails || 0}`,
+                        margin + 9,
+                        yPos + 16
+                    );
+                    doc.setFontSize(7.5);
+                    doc.text('Virtual DFA Gate', pageWidth - margin - 6, yPos + 13, { align: 'right' });
+                    yPos += 32;
 
                     const actionLines = doc.splitTextToSize('Decision: ' + (scoreData.gateAction || ''), contentWidth - 2);
-                    ensureSpace(actionLines.length * 4 + 6);
+                    ensureSpace(actionLines.length * 4 + 8);
+                    doc.setFont('helvetica', 'bold');
                     doc.setFontSize(8.5);
                     doc.setTextColor(...slate);
                     doc.text(actionLines, margin, yPos);
-                    yPos += actionLines.length * 4 + 6;
+                    yPos += actionLines.length * 4 + 8;
 
+                    // Full Virtual DFA Passing Criteria table (matches Quality System card)
+                    drawSubhead('Virtual DFA Passing Criteria & Gate Governance');
+                    ensureSpace(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(7.5);
+                    doc.setTextColor(...muted);
+                    const tierNote = 'Two-Tier Evaluation: Tier 1 = Overall Score (assembly / line cycle). Tier 2 = Priority 5 Gate (zero-tolerance critical tooling / clearances).';
+                    const tierLines = doc.splitTextToSize(tierNote, contentWidth - 2);
+                    doc.text(tierLines, margin, yPos);
+                    yPos += tierLines.length * 3.4 + 4;
+
+                    const gateRows = [
+                        ['PASS', '>= 85.0%', '100% (0 Critical Fails)', 'Design approved for tooling release and prototype build freeze.'],
+                        ['CONDITIONAL PASS', '70.0% - 84.9%', '100% (0 Critical Fails)', 'Manufacturable. Requires signed engineering waiver for P3 deviations.'],
+                        ['FAILED', '< 70.0% OR any score', '< 100% (>= 1 P5 Fail)', 'CAD freeze blocked. Immediate redesign required for failed rules.']
+                    ];
+                    const activeGate = String(scoreData.gateStatus || 'FAILED');
+                    ensureSpace(42);
+                    doc.autoTable({
+                        startY: yPos,
+                        head: [['Gate Status', 'Tier 1: Overall Score', 'Tier 2: Priority 5 Rules', 'Decision & Action Required']],
+                        body: gateRows,
+                        theme: 'grid',
+                        styles: {
+                            font: 'helvetica',
+                            fontSize: 7.4,
+                            cellPadding: { top: 3, bottom: 3, left: 2.4, right: 2.4 },
+                            textColor: slate,
+                            overflow: 'linebreak',
+                            valign: 'top',
+                            lineColor: line,
+                            lineWidth: 0.16,
+                            minCellHeight: 11
+                        },
+                        headStyles: {
+                            fillColor: teal,
+                            textColor: white,
+                            fontStyle: 'bold',
+                            fontSize: 7.5,
+                            cellPadding: { top: 3.2, bottom: 3.2, left: 2.4, right: 2.4 }
+                        },
+                        columnStyles: {
+                            0: { cellWidth: 32, fontStyle: 'bold' },
+                            1: { cellWidth: 34 },
+                            2: { cellWidth: 40 },
+                            3: { cellWidth: contentWidth - 106 }
+                        },
+                        didParseCell: function(data) {
+                            if (data.section !== 'body') return;
+                            const rowStatus = String(gateRows[data.row.index][0] || '');
+                            if (rowStatus !== activeGate) return;
+                            if (rowStatus === 'PASS') data.cell.styles.fillColor = [232, 245, 233];
+                            else if (rowStatus === 'CONDITIONAL PASS') data.cell.styles.fillColor = [255, 243, 224];
+                            else data.cell.styles.fillColor = [255, 235, 238];
+                            if (data.column.index === 0) data.cell.styles.textColor = accent;
+                        },
+                        margin: tableEdge,
+                        tableWidth: contentWidth
+                    });
+                    yPos = doc.lastAutoTable.finalY + 8;
+
+                    drawSubhead('Score Breakdown');
                     drawKvTable([
-                        ['PASS', 'Overall >= 85% AND Priority 5 = 100% (0 critical fails)'],
-                        ['CONDITIONAL PASS', 'Overall 70.0%-84.9% AND Priority 5 = 100%'],
-                        ['FAILED', 'Overall < 70% OR Priority 5 < 100% (>= 1 P5 fail)'],
                         ['Formula', 'Score % = 100 - (Sum of Penalties / Sum of Applicable x 100)'],
                         ['Fail / Conditional', 'Full P x W / Half (0.5 x P x W)'],
                         ['Applicable', 'Full AMR catalog']
                     ]);
-
                     drawKvGrid([
                         ['Tier 1 Overall', `${scoreData.overall.toFixed(2)}%`],
                         ['Tier 2 Priority 5', `${scoreData.priority5.toFixed(2)}%`],
