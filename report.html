@@ -1431,7 +1431,9 @@
             fragment.appendChild(createSummaryStats(data));
             
             if (data.revup && Object.keys(data.revup).length > 0) {
-                fragment.appendChild(createREVUPSection(data.revup));
+                const appType = data.metadata && data.metadata.applicationType;
+                const sectionTitle = appType === 'newdfa' ? 'NEW DFA Information' : 'REVUP Information';
+                fragment.appendChild(createREVUPSection(data.revup, sectionTitle));
             } else if (data.newdfa && Object.keys(data.newdfa).length > 0) {
                 fragment.appendChild(createREVUPSection(data.newdfa, 'NEW DFA Information'));
             }

@@ -1017,7 +1017,7 @@
             <div class="progress-steps">
                 <div class="progress-step completed">
                     <div class="step-circle">✓</div>
-                    <span class="step-label">REVUP</span>
+                    <span class="step-label" id="startStepLabel">NEW DFA</span>
                 </div>
                 <div class="progress-step completed">
                     <div class="step-circle">✓</div>
@@ -1222,11 +1222,18 @@
             }
         });
 
+        function getStartStepLabel() {
+            const type = currentDFA && currentDFA.metadata && currentDFA.metadata.applicationType;
+            return type === 'revup' ? 'REVUP' : 'NEW DFA';
+        }
+
         function loadCurrentDFA() {
             const dfaData = localStorage.getItem('currentDFA');
             if (dfaData) {
                 currentDFA = JSON.parse(dfaData);
                 document.getElementById('dfaIdBadge').innerHTML = `<span>🔖</span><span>${currentDFA.dfaId}</span>`;
+                const startLabel = document.getElementById('startStepLabel');
+                if (startLabel) startLabel.textContent = getStartStepLabel();
             } else {
                 alert('No active DFA session found. Redirecting to home...');
                 window.location.href = 'index.html';

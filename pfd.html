@@ -1197,7 +1197,7 @@
                         <span>🔖</span>
                         <span>Loading...</span>
                     </div>
-                    <button class="btn-header btn-back" onclick="window.location.href='revup.html'">
+                    <button class="btn-header btn-back" id="backToStartBtn" onclick="goBackToStartForm()">
                         <span>←</span>
                         <span>Back</span>
                     </button>
@@ -1210,7 +1210,7 @@
             <div class="progress-steps">
                 <div class="progress-step completed">
                     <div class="step-circle">✓</div>
-                    <span class="step-label">REVUP</span>
+                    <span class="step-label" id="startStepLabel">NEW DFA</span>
                 </div>
                 <div class="progress-step active">
                     <div class="step-circle">2</div>
@@ -1510,11 +1510,23 @@
             }
         }
 
+        function getStartStepLabel() {
+            const type = currentDFA && currentDFA.metadata && currentDFA.metadata.applicationType;
+            return type === 'revup' ? 'REVUP' : 'NEW DFA';
+        }
+
+        function goBackToStartForm() {
+            const type = currentDFA && currentDFA.metadata && currentDFA.metadata.applicationType;
+            window.location.href = type === 'revup' ? 'revup.html' : 'newdfa.html';
+        }
+
         function loadCurrentDFA() {
             const dfaData = localStorage.getItem('currentDFA');
             if (dfaData) {
                 currentDFA = JSON.parse(dfaData);
                 document.getElementById('dfaIdBadge').innerHTML = `<span>🔖</span><span>${currentDFA.dfaId}</span>`;
+                const startLabel = document.getElementById('startStepLabel');
+                if (startLabel) startLabel.textContent = getStartStepLabel();
             } else {
                 alert('No active DFA session found. Redirecting to home...');
                 window.location.href = 'index.html';
