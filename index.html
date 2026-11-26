@@ -187,6 +187,87 @@
             color: #363;
         }
 
+        .filter-results {
+            margin-top: 14px;
+            display: none;
+            max-height: 320px;
+            overflow-y: auto;
+            border: 1px solid #D3DBE3;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .filter-results.show {
+            display: block;
+        }
+
+        .filter-meta {
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: #5C6B7A;
+            border-bottom: 1px solid #E8EEF0;
+            background: #F7F9FA;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            border-bottom: 1px solid #EEF2F4;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .filter-item:last-child {
+            border-bottom: none;
+        }
+
+        .filter-item:hover {
+            background: #E6F5F3;
+        }
+
+        .filter-item-main {
+            min-width: 0;
+        }
+
+        .filter-item-id {
+            font-weight: 700;
+            color: #0B4F4A;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .filter-item-meta {
+            font-size: 0.82rem;
+            color: #5C6B7A;
+            margin-top: 2px;
+        }
+
+        .filter-type {
+            flex-shrink: 0;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .filter-type.revup {
+            background: #E6F5ED;
+            color: #1B7A4E;
+        }
+
+        .filter-type.newdfa {
+            background: #E6F5F3;
+            color: #0B4F4A;
+        }
+
+        .filter-empty {
+            padding: 16px 14px;
+            color: #5C6B7A;
+            font-size: 0.9rem;
+        }
+
         .divider {
             text-align: center;
             color: white;
@@ -513,17 +594,20 @@
         <!-- Search Section -->
         <div class="search-section">
             <div class="search-title">
-                🔍 Search Existing DFA
+                🔍 Filter Existing DFAs
             </div>
             <div class="search-container">
                 <input 
                     type="text" 
                     class="search-input" 
                     id="searchInput" 
-                    placeholder="Enter DFA ID (e.g., DFA-2024-001)"
+                    placeholder="Type to filter (e.g., DFA-01, platform, owner...)"
+                    autocomplete="off"
+                    oninput="filterDFAs()"
                 >
-                <button class="search-btn" onclick="searchDFA()">Search</button>
+                <button class="search-btn" type="button" onclick="filterDFAs()">Filter</button>
             </div>
+            <div class="filter-results" id="filterResults"></div>
             <div class="search-result" id="searchResult"></div>
         </div>
 
@@ -544,7 +628,7 @@
         </div>
 
         <div class="keyboard-hint">
-            💡 Tip: Press '1' for REVUP or '2' for NEW DFA
+            💡 Tip: Type in the filter box to find DFAs. Outside the box, press '1' for REVUP or '2' for NEW DFA
         </div>
     </div>
 
@@ -616,42 +700,88 @@
             return dfaId;
         }
 
-        // Search DFA
-        function searchDFA() {
-            const searchInput = document.getElementById('searchInput');
-            const searchResult = document.getElementById('searchResult');
-            const dfaId = searchInput.value.trim();
+        function getAllStoredDFAs() {
+            const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
+            return Object.values(allDFAs).sort(function(a, b) {
+                return new Date(b.metadata && b.metadata.createdAt || 0) - new Date(a.metadata && a.metadata.createdAt || 0);
+            });
+        }
 
-            if (!dfaId) {
-                searchResult.className = 'search-result error show';
-                searchResult.textContent = '⚠️ Please enter a DFA ID';
+        function dfaMatchesQuery(dfa, query) {
+            if (!query) return true;
+            const src = dfa.revup || dfa.newdfa || {};
+            const haystack = [
+                dfa.dfaId,
+                dfa.metadata && dfa.metadata.applicationType,
+                dfa.metadata && dfa.metadata.status,
+                src.platform,
+                src.swimlanes,
+                src.dfaOwner,
+                src.tcNumber,
+                src.tcDescription,
+                src.milestone,
+                src.versionNumber
+            ].filter(Boolean).join(' ').toLowerCase();
+            return haystack.includes(query);
+        }
+
+        function filterDFAs() {
+            const searchInput = document.getElementById('searchInput');
+            const filterResults = document.getElementById('filterResults');
+            const searchResult = document.getElementById('searchResult');
+            const query = (searchInput.value || '').trim().toLowerCase();
+
+            searchResult.className = 'search-result';
+            searchResult.innerHTML = '';
+
+            if (!query) {
+                filterResults.className = 'filter-results';
+                filterResults.innerHTML = '';
                 return;
             }
 
-            const dfaList = JSON.parse(localStorage.getItem('dfaList') || '[]');
-            const found = dfaList.find(dfa => dfa.dfaId === dfaId);
+            const matches = getAllStoredDFAs().filter(function(dfa) {
+                return dfaMatchesQuery(dfa, query);
+            });
 
-            if (found) {
-                const allDFAs = JSON.parse(localStorage.getItem('allDFAData') || '{}');
-                const dfaData = allDFAs[dfaId];
-
-                if (dfaData) {
-                    localStorage.setItem('currentDFA', JSON.stringify(dfaData));
-                    searchResult.className = 'search-result success show';
-                    searchResult.innerHTML = `
-                        ✓ DFA Found: ${dfaId}<br>
-                        Type: ${found.applicationType}<br>
-                        Status: ${found.status}<br>
-                        <button class="search-btn" style="margin-top: 10px;" onclick="loadDFA('${dfaId}')">Load DFA</button>
-                    `;
-                } else {
-                    searchResult.className = 'search-result error show';
-                    searchResult.textContent = '⚠️ DFA data corrupted or missing';
-                }
-            } else {
-                searchResult.className = 'search-result error show';
-                searchResult.textContent = '❌ DFA ID not found';
+            filterResults.className = 'filter-results show';
+            if (!matches.length) {
+                filterResults.innerHTML = `<div class="filter-empty">No DFAs match “${escapeHtml(searchInput.value.trim())}”</div>`;
+                return;
             }
+
+            const rows = matches.map(function(dfa) {
+                const type = (dfa.metadata && dfa.metadata.applicationType) || 'newdfa';
+                const src = dfa.revup || dfa.newdfa || {};
+                const status = (dfa.metadata && dfa.metadata.status) || 'in-progress';
+                const platform = src.platform || '—';
+                const owner = src.dfaOwner || '—';
+                const typeLabel = type === 'revup' ? 'REVUP' : 'NEW DFA';
+                const typeClass = type === 'revup' ? 'revup' : 'newdfa';
+                const safeId = String(dfa.dfaId).replace(/'/g, "\\'");
+                return `
+                    <div class="filter-item" onclick="loadDFA('${safeId}')" title="Open this DFA">
+                        <div class="filter-item-main">
+                            <div class="filter-item-id">${escapeHtml(dfa.dfaId)}</div>
+                            <div class="filter-item-meta">${escapeHtml(platform)} · ${escapeHtml(owner)} · ${escapeHtml(status)}</div>
+                        </div>
+                        <span class="filter-type ${typeClass}">${typeLabel}</span>
+                    </div>
+                `;
+            }).join('');
+
+            filterResults.innerHTML = `
+                <div class="filter-meta">${matches.length} match${matches.length === 1 ? '' : 'es'} for “${escapeHtml(searchInput.value.trim())}”</div>
+                ${rows}
+            `;
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
         }
 
         function loadDFA(dfaId) {
@@ -675,7 +805,7 @@
             const overlay = document.getElementById('loadingOverlay');
             overlay.classList.add('active');
             
-            const dfaId = createNewDFA(selection);
+            createNewDFA(selection);
             
             setTimeout(() => {
                 if (selection === 'revup') {
@@ -686,14 +816,26 @@
             }, 800);
         }
 
-        // Keyboard navigation
+        function isTypingInField() {
+            const el = document.activeElement;
+            if (!el) return false;
+            const tag = (el.tagName || '').toLowerCase();
+            return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable;
+        }
+
+        // Keyboard navigation — ignore while typing in search/filter
         document.addEventListener('keydown', (e) => {
+            if (isTypingInField()) {
+                if (e.key === 'Enter' && document.activeElement.id === 'searchInput') {
+                    e.preventDefault();
+                    filterDFAs();
+                }
+                return;
+            }
             if (e.key === '1') {
                 document.querySelector('.revup-card').click();
             } else if (e.key === '2') {
                 document.querySelector('.newdfa-card').click();
-            } else if (e.key === 'Enter' && document.activeElement.id === 'searchInput') {
-                searchDFA();
             }
         });
 
